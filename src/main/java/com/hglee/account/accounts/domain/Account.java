@@ -92,4 +92,11 @@ public class Account extends BaseEntity implements AggregateRoot {
 		this.status = Status.VERIFICATION_REQUESTED;
 		this.pinCode = PinCode.generateCode();
 	}
+	public boolean isSamePinCode(String code) {
+		return this.pinCode.isSameCode(code);
+	}
+
+	public void verify() {
+		this.status = Status.VERIFIED;
+	}
 }

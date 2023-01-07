@@ -20,6 +20,10 @@ public class PinCode {
 		this.expiresAt = expiresAt;
 	}
 
+	public boolean isSameCode(String code) {
+		return this.code.equals(code);
+	}
+
 	public boolean isExpired() {
 		return this.expiresAt.isBefore(LocalDateTime.now());
 	}
