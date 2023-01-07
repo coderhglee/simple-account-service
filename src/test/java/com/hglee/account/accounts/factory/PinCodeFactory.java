@@ -31,7 +31,6 @@ public class PinCodeFactory {
 
 	public static PinCodeFactory build() {
 		Faker faker = Faker.instance();
-		return new PinCodeFactory(faker.random().nextInt(100000, 999999).toString(), LocalDateTime.now(),
-				LocalDateTime.now().plusMinutes(3));
+		return new PinCodeFactory(faker.numerify("######"), LocalDateTime.now(), LocalDateTime.now().plusMinutes(3));
 	}
 }

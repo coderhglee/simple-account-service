@@ -81,8 +81,8 @@ public class AccountFactory {
 
 		String password = faker.internet().password(8, 14, false, true) + "1a";
 
-		return new AccountFactory(UUID.randomUUID().toString(), password, faker.phoneNumber().cellPhone(),
-				faker.internet().emailAddress(), faker.name().username(), faker.funnyName().name(),
+		return new AccountFactory(UUID.randomUUID().toString(), password, faker.numerify("010########"),
+				faker.internet().emailAddress(), faker.name().firstName(), faker.name().lastName(),
 				PinCodeFactory.build(), LocalDateTime.now(), LocalDateTime.now());
 	}
 
