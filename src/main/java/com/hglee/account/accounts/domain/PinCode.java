@@ -28,6 +28,14 @@ public class PinCode {
 		return this.expiresAt.isBefore(LocalDateTime.now());
 	}
 
+	public String getCode() {
+		return code;
+	}
+
+	public LocalDateTime getExpiresAt() {
+		return expiresAt;
+	}
+
 	public static PinCode generateCode() {
 		Random random = new Random();
 

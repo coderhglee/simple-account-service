@@ -37,6 +37,6 @@ public class RequestAccountVerificationService implements RequestAccountVerifica
 
 		Account createdAccount = this.accountRepository.save(account);
 
-		this.eventPublisher.publish(new RequestedAccountVerificationEvent(createdAccount));
+		this.eventPublisher.publish(new RequestedAccountVerificationEvent(createdAccount, createdAccount.getPinCode()));
 	}
 }
