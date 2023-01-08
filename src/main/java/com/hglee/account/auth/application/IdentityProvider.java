@@ -4,4 +4,5 @@ import com.hglee.account.auth.dto.AuthenticationResponse;
 
 public interface IdentityProvider {
 	AuthenticationResponse signInWithMobile(String mobile, String password);
+	AuthenticationResponse signInWithEmail(String email, String password);
 }

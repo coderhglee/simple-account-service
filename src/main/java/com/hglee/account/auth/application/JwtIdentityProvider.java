@@ -25,11 +25,21 @@ public class JwtIdentityProvider implements IdentityProvider {
 	public AuthenticationResponse signInWithMobile(String mobile, String password) {
 		AccountResponseDto accountResponseDto = this.accountService.signInWithMobile(mobile, password);
 
+		return grantAuthentication(accountResponseDto);
+	}
+
+	@Override
+	public AuthenticationResponse signInWithEmail(String email, String password) {
+		AccountResponseDto accountResponseDto = this.accountService.signInWithEmail(email, password);
+
+		return grantAuthentication(accountResponseDto);
+	}
+
+	private AuthenticationResponse grantAuthentication(AccountResponseDto accountResponseDto) {
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 
 		OAuth2Token oAuth2Token = tokenProvider.encode(
-				new CreateOauth2TokenDto(now.plusMinutes(5L),
-						now, accountResponseDto.getId()));
+				new CreateOauth2TokenDto(now.plusMinutes(5L), now, accountResponseDto.getId()));
 
 		return AuthenticationResponse.of(oAuth2Token.getTokenValue(), oAuth2Token.getIssuedAt(),
 				oAuth2Token.getExpiresAt());
