@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.hglee.account.accounts.exception.ConflictException;
 import com.hglee.account.accounts.exception.NotFoundException;
+import com.hglee.account.auth.exception.AuthenticationException;
 import com.hglee.account.common.dto.ErrorResponse;
 
 @RestControllerAdvice
@@ -45,4 +46,13 @@ public class ExceptionController {
 
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 	}
+
+	@ExceptionHandler(AuthenticationException.class)
+	public ResponseEntity<ErrorResponse> handleNotFoundException(AuthenticationException exception) {
+		final ErrorResponse response = ErrorResponse.of(exception.getMessage(), HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+				HttpStatus.UNAUTHORIZED.value());
+
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+	}
+
 }
