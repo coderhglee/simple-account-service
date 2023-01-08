@@ -14,6 +14,9 @@ import com.hglee.account.core.AggregateRoot;
 public class Account extends BaseEntity implements AggregateRoot {
 	@Id
 	private String id;
+
+	private String password;
+
 	@Column(unique = true)
 	private String mobile;
 
@@ -68,6 +71,10 @@ public class Account extends BaseEntity implements AggregateRoot {
 		return status;
 	}
 
+	public String getStatusAsString() {
+		return status.name();
+	}
+
 	public String getMobile() {
 		return mobile;
 	}
@@ -84,6 +91,9 @@ public class Account extends BaseEntity implements AggregateRoot {
 		return this.status == Status.ACTIVATED;
 	}
 
+	public boolean isVerified() {
+		return this.status == Status.VERIFIED;
+	}
 	public static Account ofRequestVerificationByMobile(String mobile) {
 		return new Account(mobile, Status.VERIFICATION_REQUESTED);
 	}
@@ -98,5 +108,29 @@ public class Account extends BaseEntity implements AggregateRoot {
 
 	public void verify() {
 		this.status = Status.VERIFIED;
+	}
+
+	public void signUpWithMobileAndEmail(String email, String password, String name, String nickName) {
+		this.email = email;
+		this.password = password;
+		this.name = name;
+		this.nickName = nickName;
+		this.status = Status.ACTIVATED;
+	}
+
+	public String getEmail() {
+		return this.email;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getNickName() {
+		return nickName;
+	}
+
+	public String getPassword() {
+		return this.password;
 	}
 }

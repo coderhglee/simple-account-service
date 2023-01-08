@@ -10,4 +10,5 @@ import com.hglee.account.accounts.domain.Status;
 public interface AccountJPARepository extends JpaRepository<Account, String> {
 	Optional<Account> findByMobile(String mobile);
 	Optional<Account> findByMobileAndStatus(String mobile, Status status);
+	Optional<Account> findByEmail(String mobile);
 }

@@ -47,6 +47,10 @@ public class AccountFactory {
 		return nickName;
 	}
 
+	public String getPassword() {
+		return password;
+	}
+
 	public PinCodeFactory getPinCode() {
 		return pinCode;
 	}

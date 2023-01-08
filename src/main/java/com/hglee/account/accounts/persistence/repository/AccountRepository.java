@@ -31,4 +31,9 @@ public class AccountRepository implements IAccountRepository {
 	public Optional<Account> findByMobileAndStatus(String mobile, Status status) {
 		return this.repository.findByMobileAndStatus(mobile, status);
 	}
+
+	@Override
+	public Optional<Account> findByEmail(String email) {
+		return this.repository.findByEmail(email);
+	}
 }
