@@ -149,8 +149,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				mobile = accountFactory.getMobile();
 
 				Account account = new Account(accountFactory.getId(), mobile, accountFactory.getEmail(),
-						Status.VERIFICATION_REQUESTED,
-						accountFactory.getName(), accountFactory.getNickName(),
+						Status.VERIFICATION_REQUESTED, accountFactory.getName(), accountFactory.getNickName(),
 						new PinCode(code, LocalDateTime.now().minusMinutes(1), LocalDateTime.now()));
 
 				accountRepository.save(account);
@@ -263,6 +262,219 @@ class SignUpControllerTest extends AcceptanceTest {
 						.then()
 						.apply(print())
 						.assertThat(status().is4xxClientError());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: POST /sign-up/mobile")
+	class sign_up_mobile {
+		@Nested
+		@DisplayName("동일한 이메일로 가입된 계정이 없는 경우")
+		class not_exist_email {
+			String mobile;
+			AccountFactory factory;
+
+			@BeforeEach
+			void before() {
+				factory = AccountFactory.build();
+				mobile = factory.getMobile();
+				전화번호_인증_요청(mobile);
+
+				Account account = accountRepository.findByMobile(mobile).get();
+				String code = account.getPinCode().getCode();
+
+				인증코드_인증_요청(mobile, code);
+			}
+
+			@DisplayName("회원가입 할 수 있다.")
+			@Test
+			void success_sign_up_mobile() {
+				Map<String, String> params = new HashMap<>();
+				params.put("mobile", mobile);
+				params.put("password", factory.getPassword());
+				params.put("email", factory.getEmail());
+				params.put("name", factory.getName());
+				params.put("nickName", factory.getNickName());
+
+				given().body(params)
+						.contentType(MediaType.APPLICATION_JSON_VALUE)
+						.when()
+						.post("/sign-up/mobile")
+						.then()
+						.apply(print())
+						.assertThat(status().isOk())
+						.body("id", instanceOf(String.class))
+						.body("mobile", equalTo(factory.getMobile()))
+						.body("email", equalTo(factory.getEmail()))
+						.body("name", equalTo(factory.getName()))
+						.body("nickName", equalTo(factory.getNickName()))
+						.body("status", equalTo(Status.ACTIVATED.name()));
+			}
+		}
+
+		@Nested
+		@DisplayName("계정 입력 형식이 올바르지 않는 경우")
+		class invalid_account_format {
+			@DisplayName("validation error가 발생한다.")
+			@Test
+			void success_sign_up_mobile() {
+				Map<String, String> params = new HashMap<>();
+				params.put("mobile", "010-1234-1234");
+				params.put("password", "1");
+				params.put("email", "email.com");
+				params.put("name", "***!");
+				params.put("nickName", "some*");
+
+				given().body(params)
+						.contentType(MediaType.APPLICATION_JSON_VALUE)
+						.when()
+						.post("/sign-up/mobile")
+						.then()
+						.apply(print())
+						.assertThat(status().isUnprocessableEntity())
+						.body("errors", hasSize(5));
+			}
+		}
+
+		@Nested
+		@DisplayName("전화번호 인증이 완료되지 않은 경우")
+		class not_verify_mobile {
+			String mobile;
+			AccountFactory factory;
+
+			@BeforeEach
+			void before() {
+				factory = AccountFactory.build();
+				mobile = factory.getMobile();
+				전화번호_인증_요청(mobile);
+			}
+
+			@DisplayName("에러가 발생한다.")
+			@Test
+			void success_sign_up_mobile() {
+				Map<String, String> params = new HashMap<>();
+				params.put("mobile", mobile);
+				params.put("password", factory.getPassword());
+				params.put("email", factory.getEmail());
+				params.put("name", factory.getName());
+				params.put("nickName", factory.getNickName());
+
+				given().body(params)
+						.contentType(MediaType.APPLICATION_JSON_VALUE)
+						.when()
+						.post("/sign-up/mobile")
+						.then()
+						.apply(print())
+						.assertThat(status().is4xxClientError())
+						.body("message", containsString("전화번호 인증이 완료되지 않았습니다."));
+			}
+		}
+
+		@Nested
+		@DisplayName("전화번호 인증이 요청되지 않은 경우")
+		class not_request_verification_mobile {
+			String mobile;
+			AccountFactory factory;
+
+			@BeforeEach
+			void before() {
+				factory = AccountFactory.build();
+				mobile = factory.getMobile();
+			}
+
+			@DisplayName("에러가 발생한다.")
+			@Test
+			void success_sign_up_mobile() {
+				Map<String, String> params = new HashMap<>();
+				params.put("mobile", mobile);
+				params.put("password", factory.getPassword());
+				params.put("email", factory.getEmail());
+				params.put("name", factory.getName());
+				params.put("nickName", factory.getNickName());
+
+				given().body(params)
+						.contentType(MediaType.APPLICATION_JSON_VALUE)
+						.when()
+						.post("/sign-up/mobile")
+						.then()
+						.apply(print())
+						.assertThat(status().is4xxClientError())
+						.body("message", containsString("인증된 계정이 존재하지 않습니다."));
+			}
+		}
+
+		@Nested
+		@DisplayName("동일한 이메일로 가입된 계정이 있는 경우")
+		class exist_email_account {
+			String mobile;
+			String email;
+
+			@BeforeEach
+			void before() {
+				Account signedUpAccount = AccountFactory.isSignedUpAccount();
+				accountRepository.save(signedUpAccount);
+
+				mobile = signedUpAccount.getMobile();
+				email = signedUpAccount.getEmail();
+			}
+
+			@DisplayName("동일한 이메일로 가입된 계정 에러가 발생한다.")
+			@Test
+			void failed_sign_up() {
+				AccountFactory factory = AccountFactory.build();
+				Map<String, String> params = new HashMap<>();
+				params.put("mobile", factory.getMobile());
+				params.put("password", factory.getPassword());
+				params.put("email", email);
+				params.put("name", factory.getName());
+				params.put("nickName", factory.getNickName());
+
+				given().body(params)
+						.contentType(MediaType.APPLICATION_JSON_VALUE)
+						.when()
+						.post("/sign-up/mobile")
+						.then()
+						.apply(print())
+						.assertThat(status().is4xxClientError())
+						.body("message", containsString("이미 동일한 이메일로 가입된 계정입니다."));
+			}
+		}
+
+		@Nested
+		@DisplayName("동일한 전화번호로 가입된 계정이 있는 경우")
+		class exist_mobile_account {
+			String mobile;
+			String email;
+
+			@BeforeEach
+			void before() {
+				Account signedUpAccount = AccountFactory.isSignedUpAccount();
+				accountRepository.save(signedUpAccount);
+
+				mobile = signedUpAccount.getMobile();
+				email = signedUpAccount.getEmail();
+			}
+
+			@DisplayName("동일한 전화번호로 가입된 계정 에러가 발생한다.")
+			@Test
+			void failed_sign_up() {
+				AccountFactory factory = AccountFactory.build();
+				Map<String, String> params = new HashMap<>();
+				params.put("mobile", mobile);
+				params.put("password", factory.getPassword());
+				params.put("email", factory.getEmail());
+				params.put("name", factory.getName());
+				params.put("nickName", factory.getNickName());
+
+				given().body(params)
+						.contentType(MediaType.APPLICATION_JSON_VALUE)
+						.when()
+						.post("/sign-up/mobile")
+						.then()
+						.apply(print())
+						.assertThat(status().is4xxClientError())
+						.body("message", containsString("이미 동일한 전화번호로 가입된 계정입니다."));
 			}
 		}
 	}
