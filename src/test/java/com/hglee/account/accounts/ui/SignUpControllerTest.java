@@ -104,7 +104,7 @@ class SignUpControllerTest extends AcceptanceTest {
 						.post("/sign-up/request-account-verification-mobile")
 						.then()
 						.apply(print())
-						.assertThat(status().is4xxClientError());
+						.assertThat(status().isConflict());
 			}
 		}
 	}
@@ -436,7 +436,7 @@ class SignUpControllerTest extends AcceptanceTest {
 						.post("/sign-up/mobile")
 						.then()
 						.apply(print())
-						.assertThat(status().is4xxClientError())
+						.assertThat(status().isConflict())
 						.body("message", containsString("이미 동일한 이메일로 가입된 계정입니다."));
 			}
 		}
@@ -473,7 +473,7 @@ class SignUpControllerTest extends AcceptanceTest {
 						.post("/sign-up/mobile")
 						.then()
 						.apply(print())
-						.assertThat(status().is4xxClientError())
+						.assertThat(status().isConflict())
 						.body("message", containsString("이미 동일한 전화번호로 가입된 계정입니다."));
 			}
 		}

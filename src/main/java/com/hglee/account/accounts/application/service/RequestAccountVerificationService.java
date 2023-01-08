@@ -9,6 +9,7 @@ import com.hglee.account.accounts.application.usecase.RequestAccountVerification
 import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.event.RequestedAccountVerificationEvent;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
+import com.hglee.account.accounts.exception.ConflictException;
 import com.hglee.account.core.IEventPublisher;
 
 @Service
@@ -30,7 +31,7 @@ public class RequestAccountVerificationService implements RequestAccountVerifica
 				.orElse(Account.ofRequestVerificationByMobile(command.getMobile()));
 
 		if (account.isSignedUp()) {
-			throw new IllegalArgumentException("이미 가입된 계정입니다.");
+			throw new ConflictException("이미 가입된 계정입니다.");
 		}
 
 		account.requestVerificationByMobile();

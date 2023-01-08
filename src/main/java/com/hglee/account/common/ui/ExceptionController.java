@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.hglee.account.accounts.exception.ConflictException;
 import com.hglee.account.common.dto.ErrorResponse;
 
 @RestControllerAdvice
@@ -26,5 +27,13 @@ public class ExceptionController {
 				HttpStatus.FORBIDDEN.value());
 
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+	}
+
+	@ExceptionHandler(ConflictException.class)
+	public ResponseEntity<ErrorResponse> handleConflictException(ConflictException exception) {
+		final ErrorResponse response = ErrorResponse.of(exception.getMessage(), HttpStatus.CONFLICT.getReasonPhrase(),
+				HttpStatus.CONFLICT.value());
+
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
 	}
 }

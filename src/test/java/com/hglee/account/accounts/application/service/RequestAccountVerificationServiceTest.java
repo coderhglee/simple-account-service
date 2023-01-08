@@ -19,6 +19,7 @@ import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.Status;
 import com.hglee.account.accounts.domain.event.RequestedAccountVerificationEvent;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
+import com.hglee.account.accounts.exception.ConflictException;
 import com.hglee.account.accounts.factory.AccountFactory;
 import com.hglee.account.core.IEventPublisher;
 
@@ -117,10 +118,10 @@ class RequestAccountVerificationServiceTest {
 			}
 
 			@Test
-			@DisplayName("It: IllegalArgumentException이 발생한다.")
+			@DisplayName("It: ConflictException 발생한다.")
 			void throw_error() {
 				assertThatThrownBy(() -> useCase.execute(new RequestAccountVerificationCommand(mobile))).isInstanceOf(
-						IllegalArgumentException.class);
+						ConflictException.class);
 			}
 		}
 	}

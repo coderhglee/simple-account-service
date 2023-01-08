@@ -19,6 +19,7 @@ import com.hglee.account.accounts.domain.PinCode;
 import com.hglee.account.accounts.domain.Status;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.dto.AccountResponseDto;
+import com.hglee.account.accounts.exception.ConflictException;
 import com.hglee.account.accounts.factory.AccountFactory;
 
 @SpringBootTest
@@ -102,7 +103,7 @@ class SignUpWithMobileAndEmailServiceTest {
 					then(catchThrowable(() -> useCase.execute(
 							new SignUpWithMobileAndEmailCommand(factory.getMobile(), email, factory.getPassword(),
 									factory.getName(), factory.getNickName())))).isInstanceOf(
-							IllegalArgumentException.class).hasMessageContaining("이미 동일한 이메일로 가입된 계정입니다.");
+							ConflictException.class).hasMessageContaining("이미 동일한 이메일로 가입된 계정입니다.");
 
 				}
 			}
@@ -129,7 +130,7 @@ class SignUpWithMobileAndEmailServiceTest {
 					then(catchThrowable(() -> useCase.execute(
 							new SignUpWithMobileAndEmailCommand(mobile, factory.getEmail(), factory.getPassword(),
 									factory.getName(), factory.getNickName())))).isInstanceOf(
-							IllegalArgumentException.class).hasMessageContaining("이미 동일한 전화번호로 가입된 계정입니다.");
+							ConflictException.class).hasMessageContaining("이미 동일한 전화번호로 가입된 계정입니다.");
 
 				}
 			}

@@ -10,6 +10,7 @@ import com.hglee.account.accounts.application.usecase.SignUpWithMobileAndEmailUs
 import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.dto.AccountResponseDto;
+import com.hglee.account.accounts.exception.ConflictException;
 
 @Service
 public class SignUpWithMobileAndEmailService implements SignUpWithMobileAndEmailUseCase {
@@ -34,7 +35,7 @@ public class SignUpWithMobileAndEmailService implements SignUpWithMobileAndEmail
 				.orElseThrow(() -> new IllegalArgumentException("인증된 계정이 존재하지 않습니다."));
 
 		if (account.isSignedUp()) {
-			throw new IllegalArgumentException("이미 동일한 전화번호로 가입된 계정입니다.");
+			throw new ConflictException("이미 동일한 전화번호로 가입된 계정입니다.");
 		}
 
 		if (!account.isVerified()) {
@@ -54,7 +55,7 @@ public class SignUpWithMobileAndEmailService implements SignUpWithMobileAndEmail
 	private void checkAlreadyExistAccountByEmail(String email) {
 		this.accountRepository.findByEmail(email).ifPresent((account) -> {
 			if (account.isSignedUp()) {
-				throw new IllegalArgumentException("이미 동일한 이메일로 가입된 계정입니다.");
+				throw new ConflictException("이미 동일한 이메일로 가입된 계정입니다.");
 			}
 		});
 	}
