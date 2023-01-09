@@ -1,0 +1,80 @@
+### 회원가입 전화번호 인증 요청
+POST {{host}}/sign-up/request-account-verification-mobile
+Content-Type: application/json
+
+{
+  "mobile": "01012341234"
+}
+
+### 회원가입 전화번호 인증코드 인증요청
+POST {{host}}/sign-up/verify-mobile
+Content-Type: application/json
+
+{
+  "mobile": "01012341234",
+  "code": "185651"
+}
+
+### 회원가입 요청
+POST {{host}}/sign-up/mobile
+Content-Type: application/json
+
+{
+  "mobile": "01012341234",
+  "email": "jake@gmail.com",
+  "name": "jake",
+  "nickName": "Jake",
+  "password": "password"
+}
+
+
+### 전화번호 로그인 요청
+POST {{host}}/sign-in/mobile
+Content-Type: application/json
+
+{
+  "mobile": "01012341234",
+  "password": "password"
+}
+
+### 이메일 로그인 요청
+POST {{host}}/sign-in/email
+Content-Type: application/json
+
+{
+  "email": "jake@gmail.com",
+  "password": "password!"
+}
+
+### 내정보 조회 요청
+GET {{host}}/me
+Authorization: Bearer eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvc2ltcGxlLWFjY291bnQtc2VydmljZSIsInN1YiI6IjMyMGQ0Nzk4LWRiZjgtNDhkYS1iMTY0LWQyZWQ0MzBhZjVkYiIsImV4cCI6MTY3MzIzODA2MSwiaWF0IjoxNjczMjM3NzYxfQ.Ty5XpZbxOgIyUDUC-Pz7QISfmP_4GmzgCKjD1-xZD1sPxruzR6FvNXnGGcQfWdP2qBO14TbkdxOWhzw-qe8JMBYBCsFnGeSOJbohS569GSxWvZQKqEzz_hzJRhJRx88ZBijUKFemu9Z60A9FDxDCdop-nJobE4M0sWXwvYGdAPfkBiHBP7vypZNSzdCJeUKl9Khz6DvVrtASbx270NW8SrvduxHAN-jRFP7HmmPMDv4fBfCc6GkiQORvXcdH4qnnP2COrPEJ3b_Ey7hZfZ7pOMO0vJFXwilvRAQ77_KBtL3qghhtzhpjSSt2wg4Za04Q41B_37YJqr-fDEEqmovvFg
+
+
+### 비밀번호 재설정 인증코드 요청
+POST {{host}}/request-password-reset
+Content-Type: application/json
+
+{
+  "mobile": "01012341234"
+}
+
+### 비밀번호 재설정 인증코드 인증 요청
+POST {{host}}/confirm-password-reset
+Content-Type: application/json
+
+{
+  "mobile": "01012341234",
+  "code": "615084"
+}
+
+### 비밀번호 재설정 요청
+PATCH {{host}}/password
+Content-Type: application/json
+
+{
+  "mobile": "01012341234",
+  "code": "615084",
+  "password": "password!",
+  "passwordConfirm": "password!"
+}
