@@ -1,5 +1,6 @@
 package com.hglee.account.accounts.ui;
 
+import static org.assertj.core.api.BDDAssertions.*;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -19,14 +20,14 @@ import com.hglee.account.AcceptanceTest;
 import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.PinCode;
 import com.hglee.account.accounts.domain.Status;
+import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.dto.AccountResponseDto;
 import com.hglee.account.accounts.factory.AccountFactory;
-import com.hglee.account.accounts.persistence.repository.AccountRepository;
 import com.hglee.account.auth.dto.AuthenticationResponse;
 
 class AccountControllerTest extends AcceptanceTest {
 	@Autowired
-	AccountRepository accountRepository;
+	IAccountRepository accountRepository;
 
 	@Autowired
 	PasswordEncoder passwordEncoder;
@@ -85,6 +86,122 @@ class AccountControllerTest extends AcceptanceTest {
 		}
 	}
 
+	@Nested
+	@DisplayName("Describe: POST /request-password-reset")
+	class request_password_reset {
+		@Nested
+		@DisplayName("Context: 사용자가 패스워드 재설정 인증을 요청하면")
+		class request_password_reset_mobile {
+			AccountResponseDto accountResponse;
+
+			@BeforeEach
+			void before_each() {
+				AccountFactory accountFactory = AccountFactory.build();
+				accountResponse = 회원가입_요청(accountFactory);
+			}
+
+			@DisplayName("It: 패스워드 인증 코드를 생성한다.")
+			@Test
+			void generate_password_reset_code() {
+				패스워드_인증코드_생성_요청(accountResponse.getMobile());
+			}
+
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: POST /confirm-password-reset")
+	class confirm_password_reset {
+		@Nested
+		@DisplayName("Context: 사용자가 패스워드 재설정 인증코드 확인을 요청하면")
+		class request_password_reset_mobile {
+			AccountResponseDto accountResponse;
+
+			String code;
+
+			@BeforeEach
+			void before_each() {
+				AccountFactory accountFactory = AccountFactory.build();
+				accountResponse = 회원가입_요청(accountFactory);
+
+				패스워드_인증코드_생성_요청(accountResponse.getMobile());
+
+				Account account = accountRepository.findByMobile(accountFactory.getMobile()).get();
+				code = account.getPasswordResetRequest().getCode();
+			}
+
+			@DisplayName("It: 패스워드 인증 코드를 인증할 수 있다.")
+			@Test
+			void success_get_me() {
+				패스워드_인증코드_인증_요청(accountResponse.getMobile(), code);
+			}
+
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: PATCH /password")
+	class password_Reset {
+		@Nested
+		@DisplayName("Context: 사용자가 패스워드 재설정을 요청하면")
+		class request_password_reset_mobile {
+			AccountResponseDto accountResponse;
+
+			String code;
+
+			@BeforeEach
+			void before_each() {
+				AccountFactory accountFactory = AccountFactory.build();
+				accountResponse = 회원가입_요청(accountFactory);
+
+				패스워드_인증코드_생성_요청(accountResponse.getMobile());
+
+				Account account = accountRepository.findByMobile(accountFactory.getMobile()).get();
+				code = account.getPasswordResetRequest().getCode();
+
+				패스워드_인증코드_인증_요청(accountResponse.getMobile(), code);
+
+			}
+
+			@DisplayName("It: 패스워드를 변경할 수 있다.")
+			@Test
+			void success_get_me() {
+				Map<String, String> params = new HashMap<>();
+				params.put("mobile", accountResponse.getMobile());
+				params.put("code", code);
+				params.put("password", "some_password");
+				params.put("passwordConfirm", "some_password");
+
+				given().body(params)
+						.contentType(MediaType.APPLICATION_JSON_VALUE)
+						.when()
+						.patch("/password")
+						.then()
+						.apply(print())
+						.assertThat(status().isNoContent());
+
+				AuthenticationResponse authenticationResponse = 모바일_로그인_요청(accountResponse.getMobile(),
+						"some_password");
+
+				then(authenticationResponse.getAccessToken()).isInstanceOf(String.class);
+			}
+		}
+	}
+
+	private void 패스워드_인증코드_인증_요청(String mobile, String code) {
+		Map<String, String> params = new HashMap<>();
+		params.put("mobile", mobile);
+		params.put("code", code);
+
+		given().body(params)
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.when()
+				.post("/confirm-password-reset")
+				.then()
+				.apply(print())
+				.assertThat(status().isNoContent());
+	}
+
 	private AuthenticationResponse 토큰_발급_요청(String mobile, String password) {
 		Map<String, String> loginParams = new HashMap<>();
 		loginParams.put("mobile", mobile);
@@ -129,5 +246,34 @@ class AccountControllerTest extends AcceptanceTest {
 				.body("status", equalTo(Status.ACTIVATED.name()))
 				.extract()
 				.as(AccountResponseDto.class);
+	}
+
+	private void 패스워드_인증코드_생성_요청(String mobile) {
+		Map<String, String> params = new HashMap<>();
+		params.put("mobile", mobile);
+
+		given().body(params)
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.when()
+				.post("/request-password-reset")
+				.then()
+				.apply(print())
+				.assertThat(status().isNoContent());
+	}
+
+	private AuthenticationResponse 모바일_로그인_요청(String mobile, String password) {
+		Map<String, String> params = new HashMap<>();
+		params.put("mobile", mobile);
+		params.put("password", password);
+
+		return given().body(params)
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.when()
+				.post("/sign-in/mobile")
+				.then()
+				.apply(print())
+				.assertThat(status().isOk())
+				.extract()
+				.as(AuthenticationResponse.class);
 	}
 }
