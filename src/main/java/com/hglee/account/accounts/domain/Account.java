@@ -32,6 +32,9 @@ public class Account extends BaseEntity implements AggregateRoot {
 	@Embedded
 	private PinCode pinCode;
 
+	@Embedded
+	private PasswordResetRequest passwordResetRequest;
+
 	protected Account() {
 	}
 
@@ -51,6 +54,24 @@ public class Account extends BaseEntity implements AggregateRoot {
 		this.mobile = mobile;
 		this.status = status;
 		this.pinCode = pinCode;
+	}
+
+	public Account(String id, String password, String mobile, String email, Status status, String name,
+			String nickName) {
+		this.id = id;
+		this.password = password;
+		this.mobile = mobile;
+		this.email = email;
+		this.status = status;
+		this.name = name;
+		this.nickName = nickName;
+	}
+
+	public Account(String id, String mobile, Status status, PasswordResetRequest passwordResetRequest) {
+		this.id = id;
+		this.mobile = mobile;
+		this.status = status;
+		this.passwordResetRequest = passwordResetRequest;
 	}
 
 	public Account(String mobile, Status status) {
@@ -87,6 +108,10 @@ public class Account extends BaseEntity implements AggregateRoot {
 		return this.pinCode.isExpired();
 	}
 
+	public boolean isExpiredPasswordResetCode() {
+		return this.passwordResetRequest.isExpired() || this.passwordResetRequest.isConfirmed();
+	}
+
 	public boolean isSignedUp() {
 		return this.status == Status.ACTIVATED;
 	}
@@ -94,6 +119,7 @@ public class Account extends BaseEntity implements AggregateRoot {
 	public boolean isVerified() {
 		return this.status == Status.VERIFIED;
 	}
+
 	public static Account ofRequestVerificationByMobile(String mobile) {
 		return new Account(mobile, Status.VERIFICATION_REQUESTED);
 	}
@@ -102,6 +128,11 @@ public class Account extends BaseEntity implements AggregateRoot {
 		this.status = Status.VERIFICATION_REQUESTED;
 		this.pinCode = PinCode.generateCode();
 	}
+
+	public void requestPasswordReset() {
+		this.passwordResetRequest = PasswordResetRequest.generate();
+	}
+
 	public boolean isSamePinCode(String code) {
 		return this.pinCode.isSameCode(code);
 	}
@@ -132,5 +163,30 @@ public class Account extends BaseEntity implements AggregateRoot {
 
 	public String getPassword() {
 		return this.password;
+	}
+
+	public PasswordResetRequest getPasswordResetRequest() {
+		return passwordResetRequest;
+	}
+
+	public boolean isSamePasswordResetCode(String code) {
+		return this.passwordResetRequest.isSameCode(code);
+	}
+
+	public void confirmPasswordReset() {
+		this.passwordResetRequest.confirm();
+	}
+
+	public void resetPassword(String newPassword) {
+		this.password = newPassword;
+		this.passwordResetRequest = null;
+	}
+
+	public boolean hasPasswordResetRequest() {
+		return this.passwordResetRequest != null;
+	}
+
+	public boolean isConfirmedPasswordReset(String code) {
+		return this.passwordResetRequest.isSameCode(code) && this.passwordResetRequest.isConfirmed();
 	}
 }

@@ -92,4 +92,12 @@ public class AccountFactory {
 		return new Account(accountFactory.getId(), accountFactory.getMobile(), build().getEmail(), Status.ACTIVATED,
 				build().getName(), build().getNickName(), PinCode.generateCode());
 	}
+
+	public static Account isSignedUpAccount(String encodedPassword) {
+		AccountFactory accountFactory = AccountFactory.build();
+
+		return new Account(accountFactory.getId(), encodedPassword, accountFactory.getMobile(), build().getEmail(),
+				Status.ACTIVATED, build().getName(), build().getNickName());
+	}
+
 }
