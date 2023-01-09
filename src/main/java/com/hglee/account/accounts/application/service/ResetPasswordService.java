@@ -6,11 +6,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.hglee.account.accounts.application.command.ResetPasswordCommand;
-import com.hglee.account.accounts.application.command.VerifyAccountCommand;
 import com.hglee.account.accounts.application.usecase.ResetPasswordUseCase;
-import com.hglee.account.accounts.application.usecase.VerifyAccountUseCase;
 import com.hglee.account.accounts.domain.Account;
-import com.hglee.account.accounts.domain.Status;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.exception.NotFoundException;
 

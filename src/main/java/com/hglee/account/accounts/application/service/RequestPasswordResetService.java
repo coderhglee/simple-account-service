@@ -4,15 +4,11 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
-import com.hglee.account.accounts.application.command.RequestAccountVerificationCommand;
 import com.hglee.account.accounts.application.command.RequestPasswordResetCommand;
-import com.hglee.account.accounts.application.usecase.RequestAccountVerificationUseCase;
 import com.hglee.account.accounts.application.usecase.RequestPasswordResetUseCase;
 import com.hglee.account.accounts.domain.Account;
-import com.hglee.account.accounts.domain.event.RequestedAccountVerificationEvent;
 import com.hglee.account.accounts.domain.event.RequestedPasswordResetEvent;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
-import com.hglee.account.accounts.exception.ConflictException;
 import com.hglee.account.accounts.exception.NotFoundException;
 import com.hglee.account.core.IEventPublisher;
 

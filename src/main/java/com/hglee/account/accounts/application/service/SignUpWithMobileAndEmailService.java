@@ -53,7 +53,7 @@ public class SignUpWithMobileAndEmailService implements SignUpWithMobileAndEmail
 	}
 
 	private void checkAlreadyExistAccountByEmail(String email) {
-		this.accountRepository.findByEmail(email).ifPresent((account) -> {
+		this.accountRepository.findByEmail(email).ifPresent(account -> {
 			if (account.isSignedUp()) {
 				throw new ConflictException("이미 동일한 이메일로 가입된 계정입니다.");
 			}

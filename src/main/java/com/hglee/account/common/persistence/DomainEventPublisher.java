@@ -2,7 +2,6 @@ package com.hglee.account.common.persistence;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.hglee.account.core.IDomainEvent;
 import com.hglee.account.core.IEventPublisher;

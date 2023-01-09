@@ -19,6 +19,6 @@ public class RequestedPasswordResetHandler extends EventHandler<RequestedPasswor
 		PasswordResetRequest passwordResetRequest = event.getPasswordResetRequest();
 
 		log.info("비밀번호 재설정 인증번호가 전송되었습니다. mobile: {} code: {} expiresAt: {}", account.getMobile(),
-				passwordResetRequest.getCode(), passwordResetRequest.getExpiresAt().toString());
+				passwordResetRequest.getCode(), passwordResetRequest.getExpiresAt());
 	}
 }

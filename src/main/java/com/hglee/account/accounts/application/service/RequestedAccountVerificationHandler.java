@@ -19,6 +19,6 @@ public class RequestedAccountVerificationHandler extends EventHandler<RequestedA
 		PinCode pinCode = event.getPinCode();
 
 		log.info("인증번호가 전송되었습니다. mobile: {} code: {} expiresAt: {}", account.getMobile(), pinCode.getCode(),
-				pinCode.getExpiresAt().toString());
+				pinCode.getExpiresAt());
 	}
 }

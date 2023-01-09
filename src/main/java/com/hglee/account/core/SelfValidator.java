@@ -11,7 +11,7 @@ import javax.validation.ValidatorFactory;
 public abstract class SelfValidator<T> {
 	private final Validator validator;
 
-	public SelfValidator() {
+	protected SelfValidator() {
 		try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
 			validator = factory.getValidator();
 		}
