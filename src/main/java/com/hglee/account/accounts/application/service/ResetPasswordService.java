@@ -10,16 +10,16 @@ import com.hglee.account.accounts.application.usecase.ResetPasswordUseCase;
 import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.exception.NotFoundException;
+import com.hglee.account.verificationCode.application.usecase.FindVerificationCodeUseCase;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 @Service
 public class ResetPasswordService implements ResetPasswordUseCase {
 	private final IAccountRepository accountRepository;
+	private final FindVerificationCodeUseCase findVerificationCodeUseCase;
 	private final PasswordEncoder encoder;
-
-	public ResetPasswordService(IAccountRepository accountRepository, PasswordEncoder encoder) {
-		this.accountRepository = accountRepository;
-		this.encoder = encoder;
-	}
 
 	@Override
 	@Transactional
@@ -39,9 +39,9 @@ public class ResetPasswordService implements ResetPasswordUseCase {
 			throw new IllegalArgumentException("이전 패스워드와 일치합니다.");
 		}
 
-		if (!account.isConfirmedPasswordReset(command.getCode())) {
+		findVerificationCodeUseCase.findVerified(mobile, command.getCode()).orElseThrow(() -> {
 			throw new IllegalArgumentException("잘못된 인증코드 입니다.");
-		}
+		});
 
 		account.resetPassword(encoder.encode(newPassword));
 

@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import com.github.javafaker.Faker;
 import com.hglee.account.accounts.domain.Account;
-import com.hglee.account.accounts.domain.PasswordResetRequest;
 import com.hglee.account.accounts.domain.Status;
 
 public class AccountFactory {
@@ -113,12 +112,4 @@ public class AccountFactory {
 		return new Account(accountFactory.getId(), encodedPassword, accountFactory.getMobile(), build().getEmail(),
 				Status.ACTIVATED, build().getName(), build().getNickName());
 	}
-
-	public static Account isSignedUpAccount(String encodedPassword, PasswordResetRequest resetRequest) {
-		AccountFactory accountFactory = AccountFactory.build();
-
-		return new Account(accountFactory.getId(), encodedPassword, accountFactory.getMobile(), build().getEmail(),
-				Status.ACTIVATED, build().getName(), build().getNickName(), resetRequest);
-	}
-
 }

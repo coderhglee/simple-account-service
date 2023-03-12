@@ -16,6 +16,9 @@ import com.hglee.account.accounts.application.usecase.ResetPasswordUseCase;
 import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.factory.AccountFactory;
+import com.hglee.account.verificationCode.application.usecase.FindVerificationCodeUseCase;
+import com.hglee.account.verificationCode.domain.VerificationCode;
+import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;
 
 @SpringBootTest
 class ResetPasswordServiceTest {
@@ -24,13 +27,19 @@ class ResetPasswordServiceTest {
 	IAccountRepository accountRepository;
 
 	@Autowired
+	IVerificationCodeRepository verificationCodeRepository;
+
+	@Autowired
+	FindVerificationCodeUseCase findVerificationCodeUseCase;
+
+	@Autowired
 	PasswordEncoder encoder;
 
 	ResetPasswordUseCase useCase;
 
 	@BeforeEach
 	void before() {
-		useCase = new ResetPasswordService(accountRepository, encoder);
+		useCase = new ResetPasswordService(accountRepository, findVerificationCodeUseCase, encoder);
 	}
 
 	@Nested
@@ -40,6 +49,7 @@ class ResetPasswordServiceTest {
 		@DisplayName("Context: 인증 완료된 계정인 경우")
 		class confirmed_password_account {
 			Account signedUpAccount;
+			String code;
 			String password;
 
 			@BeforeEach
@@ -48,8 +58,7 @@ class ResetPasswordServiceTest {
 				password = factory.getPassword();
 				signedUpAccount = AccountFactory.isSignedUpAccount(encoder.encode(password));
 
-				signedUpAccount.requestPasswordReset();
-				signedUpAccount.confirmPasswordReset();
+				code = 비밀번호_변경_인증코드_인증됨(signedUpAccount.getMobile());
 
 				accountRepository.save(signedUpAccount);
 			}
@@ -58,8 +67,7 @@ class ResetPasswordServiceTest {
 			@Test
 			void reset_password() {
 				String newPassword = "new_password";
-				useCase.execute(new ResetPasswordCommand(signedUpAccount.getMobile(),
-						signedUpAccount.getPasswordResetRequest().getCode(), newPassword, newPassword));
+				useCase.execute(new ResetPasswordCommand(signedUpAccount.getMobile(), code, newPassword, newPassword));
 
 				Account account = accountRepository.findByMobile(signedUpAccount.getMobile()).get();
 
@@ -70,14 +78,23 @@ class ResetPasswordServiceTest {
 		@Nested
 		@DisplayName("Context: 비밀번호와 비밀번호 확인 문자가 일치하지 않으면")
 		class not_equals_password_confirm {
+			String mobile;
+
+			@BeforeEach
+			void before() {
+				Account signedUpAccount = AccountFactory.isSignedUpAccount();
+
+				mobile = signedUpAccount.getMobile();
+
+				비밀번호_변경_인증코드_발급됨(mobile);
+			}
+
 			@DisplayName("에러가 발생한다.")
 			@Test
 			void throw_error() {
-				Account signedUpAccount = AccountFactory.isSignedUpAccount();
 				assertThatThrownBy(() -> useCase.execute(
-						new ResetPasswordCommand(signedUpAccount.getMobile(), "123456", "new_password",
-								"some_password"))).isInstanceOf(IllegalArgumentException.class)
-						.hasMessageContaining("패스워드가 일치하지 않습니다.");
+						new ResetPasswordCommand(mobile, "123456", "new_password", "some_password"))).isInstanceOf(
+						IllegalArgumentException.class).hasMessageContaining("패스워드가 일치하지 않습니다.");
 			}
 		}
 
@@ -86,6 +103,7 @@ class ResetPasswordServiceTest {
 		class equals_old_password_account {
 			Account signedUpAccount;
 			String password;
+			String code;
 
 			@BeforeEach
 			void before() {
@@ -93,17 +111,16 @@ class ResetPasswordServiceTest {
 				password = factory.getPassword();
 				signedUpAccount = AccountFactory.isSignedUpAccount(encoder.encode(password));
 
-				signedUpAccount.requestPasswordReset();
-				signedUpAccount.confirmPasswordReset();
-
 				accountRepository.save(signedUpAccount);
+
+				code = 비밀번호_변경_인증코드_인증됨(signedUpAccount.getMobile());
 			}
 
 			@DisplayName("에러가 발생한다.")
 			@Test
 			void throw_error() {
 				assertThatThrownBy(() -> useCase.execute(new ResetPasswordCommand(signedUpAccount.getMobile(),
-						signedUpAccount.getPasswordResetRequest().getCode(), password, password))).isInstanceOf(
+						code, password, password))).isInstanceOf(
 						IllegalArgumentException.class).hasMessageContaining("이전 패스워드와 일치합니다.");
 			}
 		}
@@ -120,10 +137,9 @@ class ResetPasswordServiceTest {
 				password = factory.getPassword();
 				signedUpAccount = AccountFactory.isSignedUpAccount(encoder.encode(password));
 
-				signedUpAccount.requestPasswordReset();
-				signedUpAccount.confirmPasswordReset();
-
 				accountRepository.save(signedUpAccount);
+
+				비밀번호_변경_인증코드_발급됨(signedUpAccount.getMobile());
 			}
 
 			@DisplayName("에러가 발생한다.")
@@ -135,5 +151,20 @@ class ResetPasswordServiceTest {
 						.hasMessageContaining("잘못된 인증코드 입니다.");
 			}
 		}
+	}
+
+	private String 비밀번호_변경_인증코드_발급됨(String mobile) {
+		VerificationCode verificationCode = VerificationCode.generate(mobile);
+
+		verificationCodeRepository.save((verificationCode));
+		return verificationCode.getCode();
+	}
+
+	private String 비밀번호_변경_인증코드_인증됨(String mobile) {
+		VerificationCode verificationCode = VerificationCode.generate(mobile);
+		verificationCode.verify();
+
+		verificationCodeRepository.save((verificationCode));
+		return verificationCode.getCode();
 	}
 }

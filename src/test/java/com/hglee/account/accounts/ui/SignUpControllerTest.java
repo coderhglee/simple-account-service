@@ -127,8 +127,7 @@ class SignUpControllerTest extends AcceptanceTest {
 
 				mobile = accountFactory.getMobile();
 
-				전화번호_인증_요청(mobile);
-				code = 회원가입_인증코드_발급됨(mobile);
+				code = 인증코드_발급됨(mobile);
 			}
 
 			@DisplayName("It: 코드를 인증할 수 있다.")
@@ -149,7 +148,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				AccountFactory accountFactory = AccountFactory.build();
 				mobile = accountFactory.getMobile();
 
-				code = 회원가입_인증코드_인증됨(mobile);
+				code = 인증코드_인증됨(mobile);
 			}
 
 			@DisplayName("It: 403 에러가 발생한다.")
@@ -181,7 +180,7 @@ class SignUpControllerTest extends AcceptanceTest {
 
 				mobile = accountFactory.getMobile();
 
-				code = 회원가입_인증코드_인증됨(mobile);
+				code = 인증코드_인증됨(mobile);
 			}
 
 			@DisplayName("It: 403 에러가 발생한다.")
@@ -278,7 +277,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				factory = AccountFactory.build();
 				mobile = factory.getMobile();
 
-				code = 회원가입_인증코드_인증됨(mobile);
+				code = 인증코드_인증됨(mobile);
 			}
 
 			@DisplayName("회원가입 할 수 있다.")
@@ -345,7 +344,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				factory = AccountFactory.build();
 				mobile = factory.getMobile();
 
-				code = 회원가입_인증코드_발급됨(mobile);
+				code = 인증코드_발급됨(mobile);
 			}
 
 			@DisplayName("에러가 발생한다.")
@@ -420,7 +419,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				mobile = signedUpAccount.getMobile();
 				email = signedUpAccount.getEmail();
 
-				code = 회원가입_인증코드_인증됨(mobile);
+				code = 인증코드_인증됨(mobile);
 			}
 
 			@DisplayName("동일한 이메일로 가입된 계정 에러가 발생한다.")
@@ -512,14 +511,14 @@ class SignUpControllerTest extends AcceptanceTest {
 				.assertThat(status().isOk());
 	}
 
-	private String 회원가입_인증코드_발급됨(String mobile) {
-		VerificationCode verificationCode = VerificationCode.generateCode(mobile);
+	private String 인증코드_발급됨(String mobile) {
+		VerificationCode verificationCode = VerificationCode.generate(mobile);
 		verificationCodeRepository.save(verificationCode);
 		return verificationCode.getCode();
 	}
 
-	private String 회원가입_인증코드_인증됨(String mobile) {
-		VerificationCode verificationCode = VerificationCode.generateCode(mobile);
+	private String 인증코드_인증됨(String mobile) {
+		VerificationCode verificationCode = VerificationCode.generate(mobile);
 		verificationCode.verify();
 		verificationCodeRepository.save(verificationCode);
 		return verificationCode.getCode();

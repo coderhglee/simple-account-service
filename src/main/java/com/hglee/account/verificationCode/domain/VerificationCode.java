@@ -47,15 +47,20 @@ public class VerificationCode {
 		return expiresAt;
 	}
 
-	public static VerificationCode generateCode(String mobile) {
+	public static VerificationCode generate(String mobile) {
+		String code = generateRandomCode();
+
+		return new VerificationCode(new VerificationCodeId(mobile, code), LocalDateTime.now(),
+				LocalDateTime.now().plusMinutes(3L));
+	}
+
+	private static String generateRandomCode() {
 		Random random = new Random();
 
-		String code = IntStream.rangeClosed(1, 6)
+		return IntStream.rangeClosed(1, 6)
 				.collect(StringBuilder::new, (builder, number) -> builder.append(random.nextInt(9)),
 						StringBuilder::append)
 				.toString();
-
-		return new VerificationCode(new VerificationCodeId(mobile, code), LocalDateTime.now(), LocalDateTime.now().plusMinutes(3L));
 	}
 
 	public void verify() {

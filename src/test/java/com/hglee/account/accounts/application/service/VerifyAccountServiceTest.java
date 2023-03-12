@@ -2,8 +2,6 @@ package com.hglee.account.accounts.application.service;
 
 import static org.assertj.core.api.BDDAssertions.*;
 
-import java.time.LocalDateTime;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -18,7 +16,6 @@ import com.hglee.account.accounts.factory.AccountFactory;
 import com.hglee.account.accounts.factory.PinCodeFactory;
 import com.hglee.account.verificationCode.application.usecase.VerifyVerificationCodeUseCase;
 import com.hglee.account.verificationCode.domain.VerificationCode;
-import com.hglee.account.verificationCode.domain.VerificationCodeId;
 import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;
 
 @SpringBootTest
@@ -53,9 +50,7 @@ class VerifyAccountServiceTest {
 				AccountFactory accountFactory = AccountFactory.build();
 
 				mobile = accountFactory.getMobile();
-				code = accountFactory.getPinCode().getCode();
-
-				회원가입_인증코드_발급됨(mobile, code, LocalDateTime.now().plusMinutes(1));
+				code = 회원가입_인증코드_발급됨(mobile);
 			}
 
 			@Test
@@ -95,12 +90,9 @@ class VerifyAccountServiceTest {
 			@BeforeEach
 			void before() {
 				AccountFactory accountFactory = AccountFactory.build();
-				PinCodeFactory pincodeFactory = PinCodeFactory.build();
 
 				mobile = accountFactory.getMobile();
-				String code = pincodeFactory.getCode();
-
-				회원가입_인증코드_발급됨(mobile, code, LocalDateTime.now().plusMinutes(1));
+				회원가입_인증코드_발급됨(mobile);
 			}
 
 			@Test
@@ -121,12 +113,9 @@ class VerifyAccountServiceTest {
 			@BeforeEach
 			void before() {
 				AccountFactory accountFactory = AccountFactory.build();
-				PinCodeFactory pincodeFactory = PinCodeFactory.build();
 
 				mobile = accountFactory.getMobile();
-				code = pincodeFactory.getCode();
-
-				회원가입_인증코드_발급됨(mobile, code, LocalDateTime.now());
+				code = 회원가입_인증코드_인증됨(mobile);
 			}
 
 			@DisplayName("인증코드가 만료되었다는 에러가 발생한다.")
@@ -138,9 +127,20 @@ class VerifyAccountServiceTest {
 		}
 	}
 
-	private void 회원가입_인증코드_발급됨(String mobile, String code, LocalDateTime expiresAt) {
-		VerificationCode verificationCode = new VerificationCode(new VerificationCodeId(mobile, code), LocalDateTime.now(), expiresAt);
+	private String 회원가입_인증코드_발급됨(String mobile) {
+		VerificationCode verificationCode = VerificationCode.generate(mobile);
 
 		verificationCodeRepository.save(verificationCode);
+
+		return verificationCode.getCode();
+	}
+
+	private String 회원가입_인증코드_인증됨(String mobile) {
+		VerificationCode verificationCode = VerificationCode.generate(mobile);
+		verificationCode.verify();
+
+		verificationCodeRepository.save(verificationCode);
+
+		return verificationCode.getCode();
 	}
 }

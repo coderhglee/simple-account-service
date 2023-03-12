@@ -13,7 +13,7 @@ import com.hglee.account.accounts.exception.ConflictException;
 import com.hglee.account.core.IEventPublisher;
 import com.hglee.account.verificationCode.application.command.CreateVerificationCodeCommand;
 import com.hglee.account.verificationCode.application.usecase.CreateVerificationCodeUseCase;
-import com.hglee.account.verificationCode.domain.VerificationCode;
+import com.hglee.account.verificationCode.dto.CreateVerificationCodeResponse;
 
 import lombok.AllArgsConstructor;
 
@@ -33,8 +33,9 @@ public class RequestAccountVerificationService implements RequestAccountVerifica
 			throw new ConflictException("이미 가입된 계정입니다.");
 		});
 
-		VerificationCode execute = createVerificationCodeUseCase.execute(new CreateVerificationCodeCommand(mobile));
+		CreateVerificationCodeResponse codeResponse = createVerificationCodeUseCase.execute(
+				new CreateVerificationCodeCommand(mobile));
 
-		this.eventPublisher.publish(new RequestedAccountVerificationEvent(mobile, execute.getCode()));
+		this.eventPublisher.publish(new RequestedAccountVerificationEvent(mobile, codeResponse.getCode()));
 	}
 }

@@ -2,8 +2,6 @@ package com.hglee.account.accounts.application.service;
 
 import static org.assertj.core.api.BDDAssertions.*;
 
-import java.time.LocalDateTime;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -22,13 +20,13 @@ import com.hglee.account.accounts.exception.ConflictException;
 import com.hglee.account.accounts.factory.AccountFactory;
 import com.hglee.account.verificationCode.application.usecase.FindVerificationCodeUseCase;
 import com.hglee.account.verificationCode.domain.VerificationCode;
-import com.hglee.account.verificationCode.domain.VerificationCodeId;
 import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;
 
 @SpringBootTest
 class SignUpWithMobileAndEmailServiceTest {
 	@Autowired
 	IAccountRepository accountRepository;
+
 	@Autowired
 	IVerificationCodeRepository verificationCodeRepository;
 
@@ -63,9 +61,8 @@ class SignUpWithMobileAndEmailServiceTest {
 				void before() {
 					factory = AccountFactory.build();
 
-					code = "123456";
 					mobile = factory.getMobile();
-					회원가입_인증코드_인증됨(mobile, code);
+					code = 회원가입_인증코드_인증됨(mobile);
 				}
 
 				@Test
@@ -100,8 +97,7 @@ class SignUpWithMobileAndEmailServiceTest {
 
 					AccountFactory factory = AccountFactory.build();
 					mobile = factory.getMobile();
-					code = "123456";
-					회원가입_인증코드_인증됨(mobile, code);
+					code = 회원가입_인증코드_인증됨(mobile);
 				}
 
 				@Test
@@ -131,7 +127,7 @@ class SignUpWithMobileAndEmailServiceTest {
 
 					mobile = signedUpAccount.getMobile();
 
-					code = createVerifiedCode(mobile);
+					code = 회원가입_인증코드_인증됨(mobile);
 
 				}
 
@@ -168,19 +164,11 @@ class SignUpWithMobileAndEmailServiceTest {
 		}
 	}
 
-	private static String createVerifiedCode(String mobile) {
-		VerificationCode verificationCode = VerificationCode.generateCode(mobile);
+	private String 회원가입_인증코드_인증됨(String mobile) {
+		VerificationCode verificationCode = VerificationCode.generate(mobile);
 		verificationCode.verify();
+
+		verificationCodeRepository.save((verificationCode));
 		return verificationCode.getCode();
 	}
-
-	private void 회원가입_인증코드_인증됨(String mobile, String code) {
-		VerificationCode verificationCode = new VerificationCode(new VerificationCodeId(mobile, code), LocalDateTime.now(),
-				LocalDateTime.now().plusMinutes(1));
-
-		verificationCode.verify();
-
-		verificationCodeRepository.save(verificationCode);
-	}
-
 }

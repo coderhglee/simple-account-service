@@ -17,6 +17,10 @@ public class VerificationCodeId implements Serializable {
 	private String mobile;
 	private String code;
 
+	public static VerificationCodeId of(String mobile, String code) {
+		return new VerificationCodeId(mobile, code);
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)

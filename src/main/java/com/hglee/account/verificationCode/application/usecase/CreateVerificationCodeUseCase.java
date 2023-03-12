@@ -1,8 +1,8 @@
 package com.hglee.account.verificationCode.application.usecase;
 
 import com.hglee.account.verificationCode.application.command.CreateVerificationCodeCommand;
-import com.hglee.account.verificationCode.domain.VerificationCode;
+import com.hglee.account.verificationCode.dto.CreateVerificationCodeResponse;
 
 public interface CreateVerificationCodeUseCase {
-	VerificationCode execute(CreateVerificationCodeCommand command);
+	CreateVerificationCodeResponse execute(CreateVerificationCodeCommand command);
 }

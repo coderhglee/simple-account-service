@@ -6,6 +6,7 @@ import com.hglee.account.verificationCode.application.command.CreateVerification
 import com.hglee.account.verificationCode.application.usecase.CreateVerificationCodeUseCase;
 import com.hglee.account.verificationCode.domain.VerificationCode;
 import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;
+import com.hglee.account.verificationCode.dto.CreateVerificationCodeResponse;
 
 @Service
 public class CreateVerificationCodeService implements CreateVerificationCodeUseCase {
@@ -17,9 +18,10 @@ public class CreateVerificationCodeService implements CreateVerificationCodeUseC
 	}
 
 	@Override
-	public VerificationCode execute(CreateVerificationCodeCommand command) {
-		VerificationCode verificationCode = VerificationCode.generateCode(command.getMobile());
+	public CreateVerificationCodeResponse execute(CreateVerificationCodeCommand command) {
+		VerificationCode createdVerificationCode = this.verificationCodeRepository.save(
+				VerificationCode.generate(command.getMobile()));
 
-		return this.verificationCodeRepository.save(verificationCode);
+		return CreateVerificationCodeResponse.of(createdVerificationCode.getCode());
 	}
 }

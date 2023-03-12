@@ -68,7 +68,7 @@ class FindSignedUpAccountServiceTest {
 			AccountFactory accountFactory = AccountFactory.build();
 
 			Account signedUpAccount = new Account(accountFactory.getId(), accountFactory.getMobile(),
-					accountFactory.getEmail(), Status.VERIFICATION_REQUESTED, accountFactory.getName(),
+					accountFactory.getEmail(), Status.DELETED, accountFactory.getName(),
 					accountFactory.getNickName());
 
 			repository.save(signedUpAccount);

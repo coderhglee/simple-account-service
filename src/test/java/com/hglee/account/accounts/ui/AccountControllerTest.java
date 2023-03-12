@@ -17,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.hglee.account.AcceptanceTest;
-import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.Status;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.dto.AccountResponseDto;
@@ -128,10 +127,7 @@ class AccountControllerTest extends AcceptanceTest {
 				AccountFactory accountFactory = AccountFactory.build();
 				accountResponse = 회원가입_요청(accountFactory);
 
-				패스워드_인증코드_생성_요청(accountResponse.getMobile());
-
-				Account account = accountRepository.findByMobile(accountFactory.getMobile()).get();
-				code = account.getPasswordResetRequest().getCode();
+				code = 인증코드_발급됨(accountResponse.getMobile());
 			}
 
 			@DisplayName("It: 패스워드 인증 코드를 인증할 수 있다.")
@@ -158,13 +154,7 @@ class AccountControllerTest extends AcceptanceTest {
 				AccountFactory accountFactory = AccountFactory.build();
 				accountResponse = 회원가입_요청(accountFactory);
 
-				패스워드_인증코드_생성_요청(accountResponse.getMobile());
-
-				Account account = accountRepository.findByMobile(accountFactory.getMobile()).get();
-				code = account.getPasswordResetRequest().getCode();
-
-				패스워드_인증코드_인증_요청(accountResponse.getMobile(), code);
-
+				code = 인증코드_인증됨(accountResponse.getMobile());
 			}
 
 			@DisplayName("It: 패스워드를 변경할 수 있다.")
@@ -224,7 +214,7 @@ class AccountControllerTest extends AcceptanceTest {
 	}
 
 	private AccountResponseDto 회원가입_요청(AccountFactory factory) {
-		String code = 인증코드_발급_요청(factory.getMobile());
+		String code = 인증코드_인증됨(factory.getMobile());
 
 		Map<String, String> params = new HashMap<>();
 		params.put("mobile", factory.getMobile());
@@ -249,13 +239,6 @@ class AccountControllerTest extends AcceptanceTest {
 				.body("status", equalTo(Status.ACTIVATED.name()))
 				.extract()
 				.as(AccountResponseDto.class);
-	}
-
-	private String 인증코드_발급_요청(String mobile) {
-		VerificationCode verificationCode = VerificationCode.generateCode(mobile);
-		verificationCode.verify();
-		verificationCodeRepository.save(verificationCode);
-		return verificationCode.getCode();
 	}
 
 	private void 패스워드_인증코드_생성_요청(String mobile) {
@@ -285,5 +268,18 @@ class AccountControllerTest extends AcceptanceTest {
 				.assertThat(status().isOk())
 				.extract()
 				.as(AuthenticationResponse.class);
+	}
+
+	private String 인증코드_발급됨(String mobile) {
+		VerificationCode verificationCode = VerificationCode.generate(mobile);
+		verificationCodeRepository.save(verificationCode);
+		return verificationCode.getCode();
+	}
+
+	private String 인증코드_인증됨(String mobile) {
+		VerificationCode verificationCode = VerificationCode.generate(mobile);
+		verificationCode.verify();
+		verificationCodeRepository.save(verificationCode);
+		return verificationCode.getCode();
 	}
 }

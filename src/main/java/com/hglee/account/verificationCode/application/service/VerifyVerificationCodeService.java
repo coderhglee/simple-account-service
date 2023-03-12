@@ -25,7 +25,8 @@ public class VerifyVerificationCodeService implements VerifyVerificationCodeUseC
 		String mobile = command.getMobile();
 		String code = command.getCode();
 
-		VerificationCode verificationCode = this.verificationCodeRepository.findOne(new VerificationCodeId(mobile, code))
+		VerificationCode verificationCode = this.verificationCodeRepository.findOne(
+						VerificationCodeId.of(mobile, code))
 				.orElseThrow(() -> new IllegalArgumentException("해당 모바일로 요청된 인증코드가 존재하지 않습니다."));
 
 		if (verificationCode.isExpired()) {

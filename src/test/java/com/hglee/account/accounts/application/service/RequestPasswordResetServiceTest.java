@@ -21,11 +21,18 @@ import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.exception.NotFoundException;
 import com.hglee.account.accounts.factory.AccountFactory;
 import com.hglee.account.core.IEventPublisher;
+import com.hglee.account.verificationCode.application.usecase.CreateVerificationCodeUseCase;
+import com.hglee.account.verificationCode.domain.VerificationCode;
+import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;
 
 @SpringBootTest
 class RequestPasswordResetServiceTest {
 	@Autowired
 	IAccountRepository accountRepository;
+
+
+	@Autowired
+	CreateVerificationCodeUseCase createVerificationCodeUseCase;
 
 	RequestPasswordResetUseCase useCase;
 
@@ -35,7 +42,7 @@ class RequestPasswordResetServiceTest {
 
 	@BeforeEach
 	void before() {
-		useCase = new RequestPasswordResetService(accountRepository, eventPublisher);
+		useCase = new RequestPasswordResetService(accountRepository, eventPublisher, createVerificationCodeUseCase);
 	}
 
 	@Nested
@@ -64,10 +71,6 @@ class RequestPasswordResetServiceTest {
 						RequestedAccountVerificationEvent.class);
 
 				verify(eventPublisher, times(1)).publish(argument.capture());
-
-				Account account = accountRepository.findByMobile(mobile).get();
-
-				then(account.isExpiredPasswordResetCode()).isFalse();
 			}
 		}
 

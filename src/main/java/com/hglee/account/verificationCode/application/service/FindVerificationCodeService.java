@@ -19,6 +19,7 @@ public class FindVerificationCodeService implements FindVerificationCodeUseCase 
 
 	@Override
 	public Optional<VerificationCode> findVerified(String mobile, String code) {
-		return this.verificationCodeRepository.findOne(new VerificationCodeId(mobile, code)).filter(VerificationCode::isConfirmed);
+		return this.verificationCodeRepository.findOne(new VerificationCodeId(mobile, code))
+				.filter(VerificationCode::isConfirmed);
 	}
 }
