@@ -10,6 +10,8 @@ public interface IAccountRepository {
 
 	Optional<Account> findByMobile(String mobile);
 
+	Optional<Account> findById(String id);
+
 	Optional<Account> findByMobileAndStatus(String mobile, Status status);
 
 	Optional<Account> findByEmail(String email);

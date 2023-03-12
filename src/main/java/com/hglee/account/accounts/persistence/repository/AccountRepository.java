@@ -28,6 +28,11 @@ public class AccountRepository implements IAccountRepository {
 	}
 
 	@Override
+	public Optional<Account> findById(String id) {
+		return repository.findById(id);
+	}
+
+	@Override
 	public Optional<Account> findByMobileAndStatus(String mobile, Status status) {
 		return this.repository.findByMobileAndStatus(mobile, status);
 	}

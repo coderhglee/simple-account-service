@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.hglee.account.accounts.exception.ConflictException;
+import com.hglee.account.accounts.exception.NotFoundException;
 import com.hglee.account.common.dto.ErrorResponse;
 
 @RestControllerAdvice
@@ -35,5 +36,13 @@ public class ExceptionController {
 				HttpStatus.CONFLICT.value());
 
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+	}
+
+	@ExceptionHandler(NotFoundException.class)
+	public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException exception) {
+		final ErrorResponse response = ErrorResponse.of(exception.getMessage(), HttpStatus.NOT_FOUND.getReasonPhrase(),
+				HttpStatus.NOT_FOUND.value());
+
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 	}
 }

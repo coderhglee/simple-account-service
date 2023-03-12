@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+/src/main/resources/*.key
+/src/main/resources/*.key.pub
