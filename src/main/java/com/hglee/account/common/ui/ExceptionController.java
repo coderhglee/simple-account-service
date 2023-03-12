@@ -31,6 +31,15 @@ public class ExceptionController {
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
 	}
 
+	@ExceptionHandler(IllegalStateException.class)
+	public ResponseEntity<ErrorResponse> handleBadRequestException(IllegalStateException exception) {
+		final ErrorResponse response = ErrorResponse.of(exception.getMessage(),
+				HttpStatus.BAD_REQUEST.getReasonPhrase(),
+				HttpStatus.BAD_REQUEST.value());
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+	}
+
 	@ExceptionHandler(ConflictException.class)
 	public ResponseEntity<ErrorResponse> handleConflictException(ConflictException exception) {
 		final ErrorResponse response = ErrorResponse.of(exception.getMessage(), HttpStatus.CONFLICT.getReasonPhrase(),
@@ -49,7 +58,8 @@ public class ExceptionController {
 
 	@ExceptionHandler(AuthenticationException.class)
 	public ResponseEntity<ErrorResponse> handleNotFoundException(AuthenticationException exception) {
-		final ErrorResponse response = ErrorResponse.of(exception.getMessage(), HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+		final ErrorResponse response = ErrorResponse.of(exception.getMessage(),
+				HttpStatus.UNAUTHORIZED.getReasonPhrase(),
 				HttpStatus.UNAUTHORIZED.value());
 
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);

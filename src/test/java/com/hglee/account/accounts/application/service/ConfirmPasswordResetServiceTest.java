@@ -13,6 +13,7 @@ import com.hglee.account.accounts.application.command.ConfirmPasswordResetComman
 import com.hglee.account.accounts.application.usecase.ConfirmPasswordResetUseCase;
 import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
+import com.hglee.account.accounts.exception.NotFoundException;
 import com.hglee.account.accounts.factory.AccountFactory;
 import com.hglee.account.verificationCode.application.usecase.VerifyVerificationCodeUseCase;
 import com.hglee.account.verificationCode.domain.VerificationCode;
@@ -48,7 +49,7 @@ class ConfirmPasswordResetServiceTest {
 				assertThatThrownBy(
 						() -> useCase.execute(new ConfirmPasswordResetCommand(AccountFactory.build().getMobile(),
 								"123456"))).isInstanceOf(
-						IllegalArgumentException.class).hasMessageContaining("해당 모바일로 요청된 인증코드가 존재하지 않습니다.");
+						NotFoundException.class).hasMessageContaining("해당 모바일로 요청된 인증코드가 존재하지 않습니다.");
 			}
 		}
 
@@ -71,7 +72,7 @@ class ConfirmPasswordResetServiceTest {
 			@Test
 			void it_throw_error() {
 				then(catchThrowable(() -> useCase.execute(new ConfirmPasswordResetCommand(mobile, code)))).isInstanceOf(
-						IllegalArgumentException.class).hasMessageContaining("인증코드가 만료되었습니다.");
+						IllegalStateException.class).hasMessageContaining("인증코드가 만료되었습니다.");
 			}
 		}
 	}

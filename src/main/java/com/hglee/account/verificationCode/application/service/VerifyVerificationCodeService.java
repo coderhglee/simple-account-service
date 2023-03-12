@@ -4,6 +4,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
+import com.hglee.account.accounts.exception.NotFoundException;
 import com.hglee.account.verificationCode.application.usecase.VerifyVerificationCodeUseCase;
 import com.hglee.account.verificationCode.application.command.VerifyVerificationCodeCommand;
 import com.hglee.account.verificationCode.domain.VerificationCode;
@@ -27,10 +28,10 @@ public class VerifyVerificationCodeService implements VerifyVerificationCodeUseC
 
 		VerificationCode verificationCode = this.verificationCodeRepository.findOne(
 						VerificationCodeId.of(mobile, code))
-				.orElseThrow(() -> new IllegalArgumentException("해당 모바일로 요청된 인증코드가 존재하지 않습니다."));
+				.orElseThrow(() -> new NotFoundException("해당 모바일로 요청된 인증코드가 존재하지 않습니다."));
 
 		if (verificationCode.isExpired()) {
-			throw new IllegalArgumentException("인증코드가 만료되었습니다.");
+			throw new IllegalStateException("인증코드가 만료되었습니다.");
 		}
 
 		verificationCode.verify();
