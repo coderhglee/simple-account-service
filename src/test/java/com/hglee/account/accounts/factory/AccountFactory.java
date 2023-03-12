@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import com.github.javafaker.Faker;
 import com.hglee.account.accounts.domain.Account;
-import com.hglee.account.accounts.domain.PinCode;
+import com.hglee.account.accounts.domain.PasswordResetRequest;
 import com.hglee.account.accounts.domain.Status;
 
 public class AccountFactory {
@@ -82,7 +82,7 @@ public class AccountFactory {
 		String password = faker.internet().password(8, 14, false, true) + "1a";
 
 		return new AccountFactory(UUID.randomUUID().toString(), password, faker.numerify("010########"),
-				faker.internet().emailAddress(), faker.name().firstName(), faker.name().lastName(),
+				faker.internet().emailAddress(), faker.name().firstName(), faker.pokemon().name(),
 				PinCodeFactory.build(), LocalDateTime.now(), LocalDateTime.now());
 	}
 
@@ -90,7 +90,21 @@ public class AccountFactory {
 		AccountFactory accountFactory = AccountFactory.build();
 
 		return new Account(accountFactory.getId(), accountFactory.getMobile(), build().getEmail(), Status.ACTIVATED,
-				build().getName(), build().getNickName(), PinCode.generateCode());
+				build().getName(), build().getNickName());
+	}
+
+	public static Account isSignedUpAccount(String mobile, String encodedPassword) {
+		AccountFactory accountFactory = AccountFactory.build();
+
+		return new Account(accountFactory.getId(), encodedPassword, mobile, build().getEmail(), Status.ACTIVATED,
+				build().getName(), build().getNickName());
+	}
+
+	public static Account isSignedUpAccount(String mobile, String email, String encodedPassword) {
+		AccountFactory accountFactory = AccountFactory.build();
+
+		return new Account(accountFactory.getId(), encodedPassword, mobile, email, Status.ACTIVATED, build().getName(),
+				build().getNickName());
 	}
 
 	public static Account isSignedUpAccount(String encodedPassword) {
@@ -98,6 +112,13 @@ public class AccountFactory {
 
 		return new Account(accountFactory.getId(), encodedPassword, accountFactory.getMobile(), build().getEmail(),
 				Status.ACTIVATED, build().getName(), build().getNickName());
+	}
+
+	public static Account isSignedUpAccount(String encodedPassword, PasswordResetRequest resetRequest) {
+		AccountFactory accountFactory = AccountFactory.build();
+
+		return new Account(accountFactory.getId(), encodedPassword, accountFactory.getMobile(), build().getEmail(),
+				Status.ACTIVATED, build().getName(), build().getNickName(), resetRequest);
 	}
 
 }

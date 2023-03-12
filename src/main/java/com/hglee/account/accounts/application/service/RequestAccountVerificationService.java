@@ -11,33 +11,30 @@ import com.hglee.account.accounts.domain.event.RequestedAccountVerificationEvent
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.exception.ConflictException;
 import com.hglee.account.core.IEventPublisher;
+import com.hglee.account.verificationCode.application.command.CreateVerificationCodeCommand;
+import com.hglee.account.verificationCode.application.usecase.CreateVerificationCodeUseCase;
+import com.hglee.account.verificationCode.domain.VerificationCode;
+
+import lombok.AllArgsConstructor;
 
 @Service
+@AllArgsConstructor
 public class RequestAccountVerificationService implements RequestAccountVerificationUseCase {
 	private final IAccountRepository accountRepository;
 	private final IEventPublisher eventPublisher;
-
-	public RequestAccountVerificationService(IAccountRepository accountRepository, IEventPublisher eventPublisher) {
-		this.accountRepository = accountRepository;
-		this.eventPublisher = eventPublisher;
-	}
+	private final CreateVerificationCodeUseCase createVerificationCodeUseCase;
 
 	@Override
 	@Transactional
 	public void execute(RequestAccountVerificationCommand command) {
 		String mobile = command.getMobile();
 
-		Account account = accountRepository.findByMobile(mobile)
-				.orElse(Account.ofRequestVerificationByMobile(command.getMobile()));
-
-		if (account.isSignedUp()) {
+		accountRepository.findByMobile(mobile).filter(Account::isSignedUp).ifPresent(account -> {
 			throw new ConflictException("이미 가입된 계정입니다.");
-		}
+		});
 
-		account.requestVerificationByMobile();
+		VerificationCode execute = createVerificationCodeUseCase.execute(new CreateVerificationCodeCommand(mobile));
 
-		Account createdAccount = this.accountRepository.save(account);
-
-		this.eventPublisher.publish(new RequestedAccountVerificationEvent(createdAccount, createdAccount.getPinCode()));
+		this.eventPublisher.publish(new RequestedAccountVerificationEvent(mobile, execute.getCode()));
 	}
 }

@@ -113,14 +113,13 @@ class ConfirmPasswordResetServiceTest {
 
 			@BeforeEach
 			void before() {
-				AccountFactory accountFactory = AccountFactory.build();
-
-				mobile = accountFactory.getMobile();
 				code = "123456";
 
-				Account account = new Account(accountFactory.getId(), mobile, Status.ACTIVATED,
+				Account account = AccountFactory.isSignedUpAccount(mobile,
 						new PasswordResetRequest(code, false, LocalDateTime.now(),
 								LocalDateTime.now().minusMinutes(1L)));
+
+				mobile = account.getMobile();
 
 				accountRepository.save(account);
 			}

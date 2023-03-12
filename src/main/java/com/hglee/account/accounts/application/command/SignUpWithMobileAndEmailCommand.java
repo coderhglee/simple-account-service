@@ -22,12 +22,18 @@ public class SignUpWithMobileAndEmailCommand extends SelfValidator<SignUpWithMob
 	@Pattern(regexp = "^(?!\\s*$)[ㄱ-ㅎ|가-힣|a-z|A-Z|0-9]{1,20}$", message = "이름 형식이 올바르지 않습니다. 영문, 한글만 허용합니다.")
 	private final String nickName;
 
-	public SignUpWithMobileAndEmailCommand(String mobile, String email, String password, String name, String nickName) {
+	@NotNull
+	@Pattern(regexp = "^[0-9]{6}$", message = "인증코드 형식이 올바르지 않습니다.")
+	private final String code;
+
+	public SignUpWithMobileAndEmailCommand(String mobile, String email, String password, String name, String nickName,
+			String code) {
 		this.mobile = mobile;
 		this.email = email;
 		this.password = password;
 		this.name = name;
 		this.nickName = nickName;
+		this.code = code;
 
 		this.validateSelf();
 	}
@@ -50,5 +56,9 @@ public class SignUpWithMobileAndEmailCommand extends SelfValidator<SignUpWithMob
 
 	public String getNickName() {
 		return nickName;
+	}
+
+	public String getCode() {
+		return code;
 	}
 }

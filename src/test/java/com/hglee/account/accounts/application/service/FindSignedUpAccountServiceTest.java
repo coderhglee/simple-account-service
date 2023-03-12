@@ -13,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.hglee.account.accounts.application.usecase.FindSignedUpAccountUseCase;
 import com.hglee.account.accounts.application.usecase.SignUpWithMobileAndEmailUseCase;
 import com.hglee.account.accounts.domain.Account;
-import com.hglee.account.accounts.domain.PinCode;
 import com.hglee.account.accounts.domain.Status;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.dto.AccountResponseDto;
@@ -70,7 +69,7 @@ class FindSignedUpAccountServiceTest {
 
 			Account signedUpAccount = new Account(accountFactory.getId(), accountFactory.getMobile(),
 					accountFactory.getEmail(), Status.VERIFICATION_REQUESTED, accountFactory.getName(),
-					accountFactory.getNickName(), PinCode.generateCode());
+					accountFactory.getNickName());
 
 			repository.save(signedUpAccount);
 

@@ -73,7 +73,7 @@ public class SignUpController {
 	public ResponseEntity<AccountResponseDto> signUpEmailAndMobile(@RequestBody final SignUpMobileRequest request) {
 		AccountResponseDto signedUpAccount = signUpWithMobileAndEmailUseCase.execute(
 				new SignUpWithMobileAndEmailCommand(request.getMobile(), request.getEmail(), request.getPassword(),
-						request.getName(), request.getNickName()));
+						request.getName(), request.getNickName(), request.getCode()));
 
 		return ResponseEntity.ok(signedUpAccount);
 	}

@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,15 +16,19 @@ import org.springframework.http.MediaType;
 
 import com.hglee.account.AcceptanceTest;
 import com.hglee.account.accounts.domain.Account;
-import com.hglee.account.accounts.domain.PinCode;
 import com.hglee.account.accounts.domain.Status;
 import com.hglee.account.accounts.factory.AccountFactory;
 import com.hglee.account.accounts.persistence.repository.AccountRepository;
+import com.hglee.account.verificationCode.domain.VerificationCode;
+import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;
 
 class SignUpControllerTest extends AcceptanceTest {
 
 	@Autowired
 	AccountRepository accountRepository;
+
+	@Autowired
+	IVerificationCodeRepository verificationCodeRepository;
 
 	@Nested
 	@DisplayName("Describe: POST /sign-up/request-verification-account-mobile")
@@ -125,8 +128,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				mobile = accountFactory.getMobile();
 
 				전화번호_인증_요청(mobile);
-				Account account = accountRepository.findByMobile(mobile).get();
-				code = account.getPinCode().getCode();
+				code = 회원가입_인증코드_발급됨(mobile);
 			}
 
 			@DisplayName("It: 코드를 인증할 수 있다.")
@@ -145,14 +147,9 @@ class SignUpControllerTest extends AcceptanceTest {
 			@BeforeEach
 			void before() {
 				AccountFactory accountFactory = AccountFactory.build();
-				code = accountFactory.getPinCode().getCode();
 				mobile = accountFactory.getMobile();
 
-				Account account = new Account(accountFactory.getId(), mobile, accountFactory.getEmail(),
-						Status.VERIFICATION_REQUESTED, accountFactory.getName(), accountFactory.getNickName(),
-						new PinCode(code, LocalDateTime.now().minusMinutes(1), LocalDateTime.now()));
-
-				accountRepository.save(account);
+				code = 회원가입_인증코드_인증됨(mobile);
 			}
 
 			@DisplayName("It: 403 에러가 발생한다.")
@@ -176,6 +173,7 @@ class SignUpControllerTest extends AcceptanceTest {
 		@DisplayName("Context: 사용된 인증코드인 경우")
 		class used_pin_code {
 			String mobile;
+			String code;
 
 			@BeforeEach
 			void before() {
@@ -183,7 +181,7 @@ class SignUpControllerTest extends AcceptanceTest {
 
 				mobile = accountFactory.getMobile();
 
-				전화번호_인증_요청(mobile);
+				code = 회원가입_인증코드_인증됨(mobile);
 			}
 
 			@DisplayName("It: 403 에러가 발생한다.")
@@ -191,7 +189,7 @@ class SignUpControllerTest extends AcceptanceTest {
 			void failed_request_verification() {
 				Map<String, String> params = new HashMap<>();
 				params.put("mobile", mobile);
-				params.put("code", "123456");
+				params.put("code", code);
 
 				given().body(params)
 						.contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -245,7 +243,6 @@ class SignUpControllerTest extends AcceptanceTest {
 				Account signedUpAccount = AccountFactory.isSignedUpAccount();
 
 				mobile = signedUpAccount.getMobile();
-				code = signedUpAccount.getPinCode().getCode();
 			}
 
 			@DisplayName("It: 403 에러가 발생한다.")
@@ -253,7 +250,7 @@ class SignUpControllerTest extends AcceptanceTest {
 			void failed_request_verification() {
 				Map<String, String> params = new HashMap<>();
 				params.put("mobile", mobile);
-				params.put("code", code);
+				params.put("code", "123456");
 
 				given().body(params)
 						.contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -273,18 +270,15 @@ class SignUpControllerTest extends AcceptanceTest {
 		@DisplayName("동일한 이메일로 가입된 계정이 없는 경우")
 		class not_exist_email {
 			String mobile;
+			String code;
 			AccountFactory factory;
 
 			@BeforeEach
 			void before() {
 				factory = AccountFactory.build();
 				mobile = factory.getMobile();
-				전화번호_인증_요청(mobile);
 
-				Account account = accountRepository.findByMobile(mobile).get();
-				String code = account.getPinCode().getCode();
-
-				인증코드_인증_요청(mobile, code);
+				code = 회원가입_인증코드_인증됨(mobile);
 			}
 
 			@DisplayName("회원가입 할 수 있다.")
@@ -292,6 +286,7 @@ class SignUpControllerTest extends AcceptanceTest {
 			void success_sign_up_mobile() {
 				Map<String, String> params = new HashMap<>();
 				params.put("mobile", mobile);
+				params.put("code", code);
 				params.put("password", factory.getPassword());
 				params.put("email", factory.getEmail());
 				params.put("name", factory.getName());
@@ -322,6 +317,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				Map<String, String> params = new HashMap<>();
 				params.put("mobile", "010-1234-1234");
 				params.put("password", "1");
+				params.put("code", "123456");
 				params.put("email", "email.com");
 				params.put("name", "***!");
 				params.put("nickName", "some*");
@@ -341,13 +337,15 @@ class SignUpControllerTest extends AcceptanceTest {
 		@DisplayName("전화번호 인증이 완료되지 않은 경우")
 		class not_verify_mobile {
 			String mobile;
+			String code;
 			AccountFactory factory;
 
 			@BeforeEach
 			void before() {
 				factory = AccountFactory.build();
 				mobile = factory.getMobile();
-				전화번호_인증_요청(mobile);
+
+				code = 회원가입_인증코드_발급됨(mobile);
 			}
 
 			@DisplayName("에러가 발생한다.")
@@ -355,6 +353,7 @@ class SignUpControllerTest extends AcceptanceTest {
 			void success_sign_up_mobile() {
 				Map<String, String> params = new HashMap<>();
 				params.put("mobile", mobile);
+				params.put("code", code);
 				params.put("password", factory.getPassword());
 				params.put("email", factory.getEmail());
 				params.put("name", factory.getName());
@@ -388,6 +387,7 @@ class SignUpControllerTest extends AcceptanceTest {
 			void success_sign_up_mobile() {
 				Map<String, String> params = new HashMap<>();
 				params.put("mobile", mobile);
+				params.put("code", "123456");
 				params.put("password", factory.getPassword());
 				params.put("email", factory.getEmail());
 				params.put("name", factory.getName());
@@ -400,7 +400,7 @@ class SignUpControllerTest extends AcceptanceTest {
 						.then()
 						.apply(print())
 						.assertThat(status().is4xxClientError())
-						.body("message", containsString("인증된 계정이 존재하지 않습니다."));
+						.body("message", containsString("전화번호 인증이 완료되지 않았습니다."));
 			}
 		}
 
@@ -410,6 +410,8 @@ class SignUpControllerTest extends AcceptanceTest {
 			String mobile;
 			String email;
 
+			String code;
+
 			@BeforeEach
 			void before() {
 				Account signedUpAccount = AccountFactory.isSignedUpAccount();
@@ -417,6 +419,8 @@ class SignUpControllerTest extends AcceptanceTest {
 
 				mobile = signedUpAccount.getMobile();
 				email = signedUpAccount.getEmail();
+
+				code = 회원가입_인증코드_인증됨(mobile);
 			}
 
 			@DisplayName("동일한 이메일로 가입된 계정 에러가 발생한다.")
@@ -425,6 +429,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				AccountFactory factory = AccountFactory.build();
 				Map<String, String> params = new HashMap<>();
 				params.put("mobile", factory.getMobile());
+				params.put("code", code);
 				params.put("password", factory.getPassword());
 				params.put("email", email);
 				params.put("name", factory.getName());
@@ -462,6 +467,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				AccountFactory factory = AccountFactory.build();
 				Map<String, String> params = new HashMap<>();
 				params.put("mobile", mobile);
+				params.put("code", "123456");
 				params.put("password", factory.getPassword());
 				params.put("email", factory.getEmail());
 				params.put("name", factory.getName());
@@ -504,5 +510,18 @@ class SignUpControllerTest extends AcceptanceTest {
 				.then()
 				.apply(print())
 				.assertThat(status().isOk());
+	}
+
+	private String 회원가입_인증코드_발급됨(String mobile) {
+		VerificationCode verificationCode = VerificationCode.generateCode(mobile);
+		verificationCodeRepository.save(verificationCode);
+		return verificationCode.getCode();
+	}
+
+	private String 회원가입_인증코드_인증됨(String mobile) {
+		VerificationCode verificationCode = VerificationCode.generateCode(mobile);
+		verificationCode.verify();
+		verificationCodeRepository.save(verificationCode);
+		return verificationCode.getCode();
 	}
 }

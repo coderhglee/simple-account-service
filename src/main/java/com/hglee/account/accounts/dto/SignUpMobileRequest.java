@@ -14,15 +14,20 @@ public class SignUpMobileRequest {
 	@ApiModelProperty(value = "닉네임", required = true, notes = "최소 1글자 최대 20글자 영문, 한글만 허용", example = "someNickName")
 	private String nickName;
 
+	@ApiModelProperty(value = "인증코드", required = true, notes = "숫자 6자리", example = "123456")
+	private String code;
+
 	public SignUpMobileRequest() {
 	}
 
-	public SignUpMobileRequest(String mobile, String email, String password, String name, String nickName) {
+	public SignUpMobileRequest(String mobile, String email, String password, String name, String nickName,
+			String code) {
 		this.mobile = mobile;
 		this.email = email;
 		this.password = password;
 		this.name = name;
 		this.nickName = nickName;
+		this.code = code;
 	}
 
 	public String getMobile() {
@@ -43,5 +48,9 @@ public class SignUpMobileRequest {
 
 	public String getNickName() {
 		return nickName;
+	}
+
+	public String getCode() {
+		return code;
 	}
 }

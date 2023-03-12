@@ -18,16 +18,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.hglee.account.AcceptanceTest;
 import com.hglee.account.accounts.domain.Account;
-import com.hglee.account.accounts.domain.PinCode;
 import com.hglee.account.accounts.domain.Status;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.dto.AccountResponseDto;
 import com.hglee.account.accounts.factory.AccountFactory;
 import com.hglee.account.auth.dto.AuthenticationResponse;
+import com.hglee.account.verificationCode.domain.VerificationCode;
+import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;
 
 class AccountControllerTest extends AcceptanceTest {
 	@Autowired
 	IAccountRepository accountRepository;
+
+	@Autowired
+	IVerificationCodeRepository verificationCodeRepository;
 
 	@Autowired
 	PasswordEncoder passwordEncoder;
@@ -220,12 +224,11 @@ class AccountControllerTest extends AcceptanceTest {
 	}
 
 	private AccountResponseDto 회원가입_요청(AccountFactory factory) {
-		Account verifiedAccount = new Account(factory.getMobile(), Status.VERIFIED, PinCode.generateCode());
-
-		accountRepository.save(verifiedAccount);
+		String code = 인증코드_발급_요청(factory.getMobile());
 
 		Map<String, String> params = new HashMap<>();
 		params.put("mobile", factory.getMobile());
+		params.put("code", code);
 		params.put("password", factory.getPassword());
 		params.put("email", factory.getEmail());
 		params.put("name", factory.getName());
@@ -246,6 +249,13 @@ class AccountControllerTest extends AcceptanceTest {
 				.body("status", equalTo(Status.ACTIVATED.name()))
 				.extract()
 				.as(AccountResponseDto.class);
+	}
+
+	private String 인증코드_발급_요청(String mobile) {
+		VerificationCode verificationCode = VerificationCode.generateCode(mobile);
+		verificationCode.verify();
+		verificationCodeRepository.save(verificationCode);
+		return verificationCode.getCode();
 	}
 
 	private void 패스워드_인증코드_생성_요청(String mobile) {

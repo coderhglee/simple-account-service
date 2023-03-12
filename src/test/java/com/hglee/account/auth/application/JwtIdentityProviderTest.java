@@ -2,21 +2,17 @@ package com.hglee.account.auth.application;
 
 import static org.assertj.core.api.BDDAssertions.*;
 
-import java.time.LocalDateTime;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.hglee.account.accounts.application.command.SignUpWithMobileAndEmailCommand;
 import com.hglee.account.accounts.application.usecase.IAccountService;
 import com.hglee.account.accounts.application.usecase.SignUpWithMobileAndEmailUseCase;
 import com.hglee.account.accounts.domain.Account;
-import com.hglee.account.accounts.domain.PinCode;
-import com.hglee.account.accounts.domain.Status;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.exception.NotFoundException;
 import com.hglee.account.accounts.factory.AccountFactory;
@@ -26,6 +22,9 @@ import com.hglee.account.auth.dto.AuthenticationResponse;
 class JwtIdentityProviderTest {
 	@Autowired
 	IAccountService accountService;
+
+	@Autowired
+	PasswordEncoder encoder;
 
 	@Autowired
 	SignUpWithMobileAndEmailUseCase signUpWithMobileAndEmailUseCase;
@@ -88,15 +87,8 @@ class JwtIdentityProviderTest {
 	}
 
 	private void 회원가입_완료_됨(String mobile, String password) {
-		AccountFactory factory = AccountFactory.build();
+		Account signedUpAccount = AccountFactory.isSignedUpAccount(mobile,encoder.encode(password));
 
-		Account account = new Account(mobile, Status.VERIFIED,
-				new PinCode(factory.getPinCode().getCode(), LocalDateTime.now(), LocalDateTime.now().plusMinutes(2L)));
-
-		accountRepository.save(account);
-
-		signUpWithMobileAndEmailUseCase.execute(
-				new SignUpWithMobileAndEmailCommand(mobile, factory.getEmail(), password, factory.getName(),
-						factory.getNickName()));
+		accountRepository.save((signedUpAccount));
 	}
 }

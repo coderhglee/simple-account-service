@@ -1,7 +1,6 @@
 package com.hglee.account.accounts.application.service;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.BDDAssertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -16,19 +15,26 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.hglee.account.accounts.application.command.RequestAccountVerificationCommand;
 import com.hglee.account.accounts.application.usecase.RequestAccountVerificationUseCase;
 import com.hglee.account.accounts.domain.Account;
-import com.hglee.account.accounts.domain.Status;
 import com.hglee.account.accounts.domain.event.RequestedAccountVerificationEvent;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.exception.ConflictException;
 import com.hglee.account.accounts.factory.AccountFactory;
 import com.hglee.account.core.IEventPublisher;
+import com.hglee.account.verificationCode.application.service.CreateVerificationCodeService;
+import com.hglee.account.verificationCode.application.usecase.CreateVerificationCodeUseCase;
+import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;
 
 @SpringBootTest
 class RequestAccountVerificationServiceTest {
 	@Autowired
 	IAccountRepository accountRepository;
 
+	@Autowired
+	IVerificationCodeRepository verificationCodeRepository;
+
 	RequestAccountVerificationUseCase useCase;
+
+	CreateVerificationCodeUseCase createVerificationCodeUseCase;
 
 	@Mock
 	IEventPublisher eventPublisher = event -> {
@@ -36,7 +42,9 @@ class RequestAccountVerificationServiceTest {
 
 	@BeforeEach
 	void before() {
-		useCase = new RequestAccountVerificationService(accountRepository, eventPublisher);
+		createVerificationCodeUseCase = new CreateVerificationCodeService(verificationCodeRepository);
+		useCase = new RequestAccountVerificationService(accountRepository, eventPublisher,
+				createVerificationCodeUseCase);
 	}
 
 	@Nested
@@ -63,11 +71,6 @@ class RequestAccountVerificationServiceTest {
 						RequestedAccountVerificationEvent.class);
 
 				verify(eventPublisher, times(1)).publish(argument.capture());
-
-				Account account = accountRepository.findByMobile(mobile).get();
-
-				then(account.getStatus()).isEqualTo(Status.VERIFICATION_REQUESTED);
-				then(account.isExpiredPinCode()).isFalse();
 			}
 		}
 
@@ -75,15 +78,11 @@ class RequestAccountVerificationServiceTest {
 		@DisplayName("Context: 동일한 전화번호로 생성된 임시계정이 존재하는 경우")
 		class context_not_exist_same_mobile_temporary_account {
 			String mobile;
-			Account existTemporaryAccount;
 
 			@BeforeEach
 			void before() {
-				AccountFactory accountFactory = AccountFactory.build();
-
-				mobile = accountFactory.getMobile();
-
-				existTemporaryAccount = accountRepository.save(Account.ofRequestVerificationByMobile(mobile));
+				mobile = AccountFactory.build().getMobile();
+				useCase.execute(new RequestAccountVerificationCommand(mobile));
 			}
 
 			@Test
@@ -94,12 +93,7 @@ class RequestAccountVerificationServiceTest {
 				ArgumentCaptor<RequestedAccountVerificationEvent> argument = ArgumentCaptor.forClass(
 						RequestedAccountVerificationEvent.class);
 
-				verify(eventPublisher, times(1)).publish(argument.capture());
-
-				Account account = accountRepository.findByMobile(mobile).get();
-
-				then(account.getStatus()).isEqualTo(Status.VERIFICATION_REQUESTED);
-				then(account.isExpiredPinCode()).isFalse();
+				verify(eventPublisher, times(2)).publish(argument.capture());
 			}
 		}
 

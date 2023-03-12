@@ -90,29 +90,5 @@ class RequestPasswordResetServiceTest {
 						NotFoundException.class);
 			}
 		}
-
-		@Nested
-		@DisplayName("Context: 계정의 상태가 가입된 상태가 아닌 경우")
-		class context_exist_not_signed_up {
-			String mobile;
-
-			@BeforeEach
-			void before() {
-				Account signedUpAccount = AccountFactory.isSignedUpAccount();
-
-				mobile = signedUpAccount.getMobile();
-				Account account = Account.ofRequestVerificationByMobile(mobile);
-
-				accountRepository.save(account);
-			}
-
-			@Test
-			@DisplayName("It: ConflictException 발생한다.")
-			void throw_error() {
-				assertThatThrownBy(() -> useCase.execute(new RequestPasswordResetCommand(mobile))).isInstanceOf(
-						IllegalArgumentException.class);
-			}
-		}
 	}
-
 }

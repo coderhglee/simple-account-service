@@ -13,23 +13,30 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.hglee.account.accounts.application.command.VerifyAccountCommand;
 import com.hglee.account.accounts.application.usecase.VerifyAccountUseCase;
-import com.hglee.account.accounts.domain.Account;
-import com.hglee.account.accounts.domain.PinCode;
-import com.hglee.account.accounts.domain.Status;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.factory.AccountFactory;
 import com.hglee.account.accounts.factory.PinCodeFactory;
+import com.hglee.account.verificationCode.application.usecase.VerifyVerificationCodeUseCase;
+import com.hglee.account.verificationCode.domain.VerificationCode;
+import com.hglee.account.verificationCode.domain.VerificationCodeId;
+import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;
 
 @SpringBootTest
 class VerifyAccountServiceTest {
 	@Autowired
 	IAccountRepository accountRepository;
 
+	@Autowired
+	VerifyVerificationCodeUseCase verifyVerificationCodeUseCase;
+
 	VerifyAccountUseCase useCase;
+
+	@Autowired
+	IVerificationCodeRepository verificationCodeRepository;
 
 	@BeforeEach
 	void before() {
-		useCase = new VerifyAccountService(accountRepository);
+		useCase = new VerifyAccountService(verifyVerificationCodeUseCase);
 	}
 
 	@Nested
@@ -48,21 +55,13 @@ class VerifyAccountServiceTest {
 				mobile = accountFactory.getMobile();
 				code = accountFactory.getPinCode().getCode();
 
-				Account account = new Account(mobile, Status.VERIFICATION_REQUESTED,
-						new PinCode(code, LocalDateTime.now(),
-								LocalDateTime.now().plusMinutes(2L)));
-
-				accountRepository.save(account);
+				회원가입_인증코드_발급됨(mobile, code, LocalDateTime.now().plusMinutes(1));
 			}
 
 			@Test
 			@DisplayName("계정이 인증된다.")
 			void it_verified_account() {
-				useCase.execute(new VerifyAccountCommand(mobile, code));
-
-				Account account = accountRepository.findByMobile(mobile).get();
-
-				then(account.getStatus()).isEqualTo(Status.VERIFIED);
+				assertThatNoException().isThrownBy(() -> useCase.execute(new VerifyAccountCommand(mobile, code)));
 			}
 		}
 
@@ -96,13 +95,12 @@ class VerifyAccountServiceTest {
 			@BeforeEach
 			void before() {
 				AccountFactory accountFactory = AccountFactory.build();
+				PinCodeFactory pincodeFactory = PinCodeFactory.build();
 
 				mobile = accountFactory.getMobile();
+				String code = pincodeFactory.getCode();
 
-				Account account = Account.ofRequestVerificationByMobile(mobile);
-				account.requestVerificationByMobile();
-
-				accountRepository.save(account);
+				회원가입_인증코드_발급됨(mobile, code, LocalDateTime.now().plusMinutes(1));
 			}
 
 			@Test
@@ -110,7 +108,7 @@ class VerifyAccountServiceTest {
 			void it_throw_error() {
 				then(catchThrowable(() -> useCase.execute(
 						new VerifyAccountCommand(mobile, PinCodeFactory.build().getCode())))).isInstanceOf(
-						IllegalArgumentException.class).hasMessageContaining("인증코드가 일치하지 않습니다.");
+						IllegalArgumentException.class).hasMessageContaining("해당 모바일로 요청된 인증코드가 존재하지 않습니다.");
 			}
 		}
 
@@ -128,11 +126,7 @@ class VerifyAccountServiceTest {
 				mobile = accountFactory.getMobile();
 				code = pincodeFactory.getCode();
 
-				Account account = new Account(mobile, Status.VERIFICATION_REQUESTED,
-						new PinCode(pincodeFactory.getCode(), LocalDateTime.now(),
-								LocalDateTime.now().minusMinutes(1L)));
-
-				accountRepository.save(account);
+				회원가입_인증코드_발급됨(mobile, code, LocalDateTime.now());
 			}
 
 			@DisplayName("인증코드가 만료되었다는 에러가 발생한다.")
@@ -142,5 +136,11 @@ class VerifyAccountServiceTest {
 						IllegalArgumentException.class).hasMessageContaining("인증코드가 만료되었습니다.");
 			}
 		}
+	}
+
+	private void 회원가입_인증코드_발급됨(String mobile, String code, LocalDateTime expiresAt) {
+		VerificationCode verificationCode = new VerificationCode(new VerificationCodeId(mobile, code), LocalDateTime.now(), expiresAt);
+
+		verificationCodeRepository.save(verificationCode);
 	}
 }

@@ -79,7 +79,7 @@ Account {
   status,
   name,
   nickName,
-  pinCode,
+  verificationCode,
   createdAt,
   updatedAt
 }
