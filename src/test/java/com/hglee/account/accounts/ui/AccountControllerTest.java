@@ -45,12 +45,12 @@ class AccountControllerTest extends AcceptanceTest {
 
 			AccountResponseDto accountResponse;
 
+			AccountFactory accountFactory;
+
 			@BeforeEach
 			void before_each() {
-				AccountFactory accountFactory = AccountFactory.build();
-				accountResponse = 회원가입_요청(accountFactory);
-
-				authResponse = 토큰_발급_요청(accountResponse.getMobile(), accountFactory.getPassword());
+				accountFactory = AccountFactory.build();
+				authResponse = 회원가입_요청(accountFactory);
 			}
 
 			@DisplayName("It: 내정보를 조회 할 수 있다.")
@@ -63,12 +63,12 @@ class AccountControllerTest extends AcceptanceTest {
 						.then()
 						.apply(print())
 						.assertThat(status().isOk())
-						.body("id", equalTo(accountResponse.getId()))
-						.body("status", equalTo(accountResponse.getStatus()))
-						.body("mobile", equalTo(accountResponse.getMobile()))
-						.body("email", equalTo(accountResponse.getEmail()))
-						.body("nickName", equalTo(accountResponse.getNickName()))
-						.body("name", equalTo(accountResponse.getName()));
+						.body("id", any(String.class))
+						.body("status", equalTo(Status.ACTIVATED.name()))
+						.body("mobile", equalTo(accountFactory.getMobile()))
+						.body("email", equalTo(accountFactory.getEmail()))
+						.body("nickName", equalTo(accountFactory.getNickName()))
+						.body("name", equalTo(accountFactory.getName()));
 			}
 		}
 
@@ -95,18 +95,19 @@ class AccountControllerTest extends AcceptanceTest {
 		@Nested
 		@DisplayName("Context: 사용자가 패스워드 재설정 인증을 요청하면")
 		class request_password_reset_mobile {
-			AccountResponseDto accountResponse;
+			String mobile;
 
 			@BeforeEach
 			void before_each() {
 				AccountFactory accountFactory = AccountFactory.build();
-				accountResponse = 회원가입_요청(accountFactory);
+				mobile = accountFactory.getMobile();
+				회원가입_요청(accountFactory);
 			}
 
 			@DisplayName("It: 패스워드 인증 코드를 생성한다.")
 			@Test
 			void generate_password_reset_code() {
-				패스워드_인증코드_생성_요청(accountResponse.getMobile());
+				패스워드_인증코드_생성_요청(mobile);
 			}
 
 		}
@@ -118,22 +119,24 @@ class AccountControllerTest extends AcceptanceTest {
 		@Nested
 		@DisplayName("Context: 사용자가 패스워드 재설정 인증코드 확인을 요청하면")
 		class request_password_reset_mobile {
-			AccountResponseDto accountResponse;
 
+			String mobile;
 			String code;
 
 			@BeforeEach
 			void before_each() {
 				AccountFactory accountFactory = AccountFactory.build();
-				accountResponse = 회원가입_요청(accountFactory);
+				회원가입_요청(accountFactory);
 
-				code = 인증코드_발급됨(accountResponse.getMobile());
+				mobile = accountFactory.getMobile();
+
+				code = 인증코드_발급됨(mobile);
 			}
 
 			@DisplayName("It: 패스워드 인증 코드를 인증할 수 있다.")
 			@Test
 			void success_get_me() {
-				패스워드_인증코드_인증_요청(accountResponse.getMobile(), code);
+				패스워드_인증코드_인증_요청(mobile, code);
 			}
 
 		}
@@ -145,23 +148,24 @@ class AccountControllerTest extends AcceptanceTest {
 		@Nested
 		@DisplayName("Context: 사용자가 패스워드 재설정을 요청하면")
 		class request_password_reset_mobile {
-			AccountResponseDto accountResponse;
+			String mobile;
 
 			String code;
 
 			@BeforeEach
 			void before_each() {
 				AccountFactory accountFactory = AccountFactory.build();
-				accountResponse = 회원가입_요청(accountFactory);
+				mobile = accountFactory.getMobile();
+				회원가입_요청(accountFactory);
 
-				code = 인증코드_인증됨(accountResponse.getMobile());
+				code = 인증코드_인증됨(mobile);
 			}
 
 			@DisplayName("It: 패스워드를 변경할 수 있다.")
 			@Test
 			void success_get_me() {
 				Map<String, String> params = new HashMap<>();
-				params.put("mobile", accountResponse.getMobile());
+				params.put("mobile", mobile);
 				params.put("code", code);
 				params.put("password", "some_password");
 				params.put("passwordConfirm", "some_password");
@@ -174,8 +178,7 @@ class AccountControllerTest extends AcceptanceTest {
 						.apply(print())
 						.assertThat(status().isNoContent());
 
-				AuthenticationResponse authenticationResponse = 모바일_로그인_요청(accountResponse.getMobile(),
-						"some_password");
+				AuthenticationResponse authenticationResponse = 모바일_로그인_요청(mobile, "some_password");
 
 				then(authenticationResponse.getAccessToken()).isInstanceOf(String.class);
 			}
@@ -213,7 +216,7 @@ class AccountControllerTest extends AcceptanceTest {
 				.as(AuthenticationResponse.class);
 	}
 
-	private AccountResponseDto 회원가입_요청(AccountFactory factory) {
+	private AuthenticationResponse 회원가입_요청(AccountFactory factory) {
 		String code = 인증코드_인증됨(factory.getMobile());
 
 		Map<String, String> params = new HashMap<>();
@@ -231,14 +234,9 @@ class AccountControllerTest extends AcceptanceTest {
 				.then()
 				.apply(print())
 				.assertThat(status().isOk())
-				.body("id", instanceOf(String.class))
-				.body("mobile", equalTo(factory.getMobile()))
-				.body("email", equalTo(factory.getEmail()))
-				.body("name", equalTo(factory.getName()))
-				.body("nickName", equalTo(factory.getNickName()))
-				.body("status", equalTo(Status.ACTIVATED.name()))
 				.extract()
-				.as(AccountResponseDto.class);
+				.body()
+				.as(AuthenticationResponse.class);
 	}
 
 	private void 패스워드_인증코드_생성_요청(String mobile) {

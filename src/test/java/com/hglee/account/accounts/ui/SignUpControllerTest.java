@@ -298,12 +298,7 @@ class SignUpControllerTest extends AcceptanceTest {
 						.then()
 						.apply(print())
 						.assertThat(status().isOk())
-						.body("id", instanceOf(String.class))
-						.body("mobile", equalTo(factory.getMobile()))
-						.body("email", equalTo(factory.getEmail()))
-						.body("name", equalTo(factory.getName()))
-						.body("nickName", equalTo(factory.getNickName()))
-						.body("status", equalTo(Status.ACTIVATED.name()));
+						.body("accessToken", instanceOf(String.class));
 			}
 		}
 

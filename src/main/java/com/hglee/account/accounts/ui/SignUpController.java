@@ -16,28 +16,25 @@ import com.hglee.account.accounts.dto.AccountResponseDto;
 import com.hglee.account.accounts.dto.RequestAccountVerificationMobileRequest;
 import com.hglee.account.accounts.dto.SignUpMobileRequest;
 import com.hglee.account.accounts.dto.VerifyMobileRequest;
+import com.hglee.account.auth.application.IdentityProvider;
+import com.hglee.account.auth.dto.AuthenticationResponse;
 import com.hglee.account.common.dto.ErrorResponse;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.AllArgsConstructor;
 
 @Api(tags = "sign-up")
+@AllArgsConstructor
 @RestController
 public class SignUpController {
 
 	private final RequestAccountVerificationUseCase requestAccountVerificationUseCase;
 	private final VerifyAccountUseCase verifyAccountUseCase;
 	private final SignUpWithMobileAndEmailUseCase signUpWithMobileAndEmailUseCase;
-
-	public SignUpController(RequestAccountVerificationUseCase requestAccountVerificationUseCase,
-			VerifyAccountUseCase verifyAccountUseCase,
-			SignUpWithMobileAndEmailUseCase signUpWithMobileAndEmailUseCase) {
-		this.requestAccountVerificationUseCase = requestAccountVerificationUseCase;
-		this.verifyAccountUseCase = verifyAccountUseCase;
-		this.signUpWithMobileAndEmailUseCase = signUpWithMobileAndEmailUseCase;
-	}
+	private final IdentityProvider identityProvider;
 
 	@ApiOperation(value = "전화번호 인증코드 요청")
 	@ApiResponses({@ApiResponse(code = 200, message = "Success"),
@@ -65,17 +62,20 @@ public class SignUpController {
 	}
 
 	@ApiOperation(value = "전화번호 회원가입 요청")
-	@ApiResponses({@ApiResponse(code = 200, message = "Success", response = AccountResponseDto.class),
+	@ApiResponses({@ApiResponse(code = 200, message = "Success", response = AuthenticationResponse.class),
 			@ApiResponse(code = 403, message = "Forbidden", response = ErrorResponse.class),
 			@ApiResponse(code = 409, message = "Conflict", response = ErrorResponse.class),
 			@ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 	@PostMapping(value = "/sign-up/mobile", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<AccountResponseDto> signUpEmailAndMobile(@RequestBody final SignUpMobileRequest request) {
+	public ResponseEntity<AuthenticationResponse> signUpEmailAndMobile(@RequestBody final SignUpMobileRequest request) {
 		AccountResponseDto signedUpAccount = signUpWithMobileAndEmailUseCase.execute(
 				new SignUpWithMobileAndEmailCommand(request.getMobile(), request.getEmail(), request.getPassword(),
 						request.getName(), request.getNickName(), request.getCode()));
 
-		return ResponseEntity.ok(signedUpAccount);
+		AuthenticationResponse authenticationResponse = identityProvider.signInWithMobile(signedUpAccount.getMobile(),
+				request.getPassword());
+
+		return ResponseEntity.ok(authenticationResponse);
 	}
 
 }
