@@ -16,9 +16,10 @@ import org.springframework.http.MediaType;
 
 import com.hglee.account.AcceptanceTest;
 import com.hglee.account.accounts.domain.Account;
-import com.hglee.account.accounts.domain.Status;
+import com.hglee.account.accounts.dto.RequestAccountVerificationMobileResponse;
 import com.hglee.account.accounts.factory.AccountFactory;
 import com.hglee.account.accounts.persistence.repository.AccountRepository;
+import com.hglee.account.auth.application.InteractionProvider;
 import com.hglee.account.verificationCode.domain.VerificationCode;
 import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;
 
@@ -29,6 +30,9 @@ class SignUpControllerTest extends AcceptanceTest {
 
 	@Autowired
 	IVerificationCodeRepository verificationCodeRepository;
+
+	@Autowired
+	InteractionProvider interactionProvider;
 
 	@Nested
 	@DisplayName("Describe: POST /sign-up/request-verification-account-mobile")
@@ -120,20 +124,32 @@ class SignUpControllerTest extends AcceptanceTest {
 		class not_expires_pin_code {
 			String mobile;
 			String code;
+			String interactionId;
 
 			@BeforeEach
 			void before() {
 				AccountFactory accountFactory = AccountFactory.build();
-
 				mobile = accountFactory.getMobile();
 
 				code = 인증코드_발급됨(mobile);
+				interactionId = Interaction_생성됨();
 			}
 
 			@DisplayName("It: 코드를 인증할 수 있다.")
 			@Test
 			void success_request_verification() {
-				인증코드_인증_요청(mobile, code);
+				Map<String, String> params = new HashMap<>();
+				params.put("mobile", mobile);
+				params.put("code", code);
+				params.put("interactionId", interactionId);
+
+				given().body(params)
+						.contentType(MediaType.APPLICATION_JSON_VALUE)
+						.when()
+						.post("/sign-up/verify-mobile")
+						.then()
+						.apply(print())
+						.assertThat(status().isOk());
 			}
 		}
 
@@ -142,6 +158,7 @@ class SignUpControllerTest extends AcceptanceTest {
 		class expires_pin_code {
 			String mobile;
 			String code;
+			String interactionId;
 
 			@BeforeEach
 			void before() {
@@ -149,6 +166,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				mobile = accountFactory.getMobile();
 
 				code = 인증코드_인증됨(mobile);
+				interactionId = Interaction_생성됨();
 			}
 
 			@DisplayName("It: 403 에러가 발생한다.")
@@ -157,6 +175,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				Map<String, String> params = new HashMap<>();
 				params.put("mobile", mobile);
 				params.put("code", code);
+				params.put("interactionId", interactionId);
 
 				given().body(params)
 						.contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -173,6 +192,7 @@ class SignUpControllerTest extends AcceptanceTest {
 		class used_pin_code {
 			String mobile;
 			String code;
+			String interactionId;
 
 			@BeforeEach
 			void before() {
@@ -181,6 +201,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				mobile = accountFactory.getMobile();
 
 				code = 인증코드_인증됨(mobile);
+				interactionId = Interaction_생성됨();
 			}
 
 			@DisplayName("It: 403 에러가 발생한다.")
@@ -189,6 +210,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				Map<String, String> params = new HashMap<>();
 				params.put("mobile", mobile);
 				params.put("code", code);
+				params.put("interactionId", interactionId);
 
 				given().body(params)
 						.contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -204,6 +226,7 @@ class SignUpControllerTest extends AcceptanceTest {
 		@DisplayName("Context: 일치하지 않는 인증코드인 경우")
 		class unmatched_pin_code {
 			String mobile;
+			String interactionId;
 
 			@BeforeEach
 			void before() {
@@ -212,6 +235,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				mobile = accountFactory.getMobile();
 
 				전화번호_인증_요청(mobile);
+				interactionId = Interaction_생성됨();
 			}
 
 			@DisplayName("It: 403 에러가 발생한다.")
@@ -220,6 +244,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				Map<String, String> params = new HashMap<>();
 				params.put("mobile", mobile);
 				params.put("code", "123456");
+				params.put("interactionId", interactionId);
 
 				given().body(params)
 						.contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -270,6 +295,7 @@ class SignUpControllerTest extends AcceptanceTest {
 		class not_exist_email {
 			String mobile;
 			String code;
+			String interactionId;
 			AccountFactory factory;
 
 			@BeforeEach
@@ -278,6 +304,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				mobile = factory.getMobile();
 
 				code = 인증코드_인증됨(mobile);
+				interactionId = Interaction_생성됨();
 			}
 
 			@DisplayName("회원가입 할 수 있다.")
@@ -290,6 +317,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				params.put("email", factory.getEmail());
 				params.put("name", factory.getName());
 				params.put("nickName", factory.getNickName());
+				params.put("interactionId", interactionId);
 
 				given().body(params)
 						.contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -305,6 +333,13 @@ class SignUpControllerTest extends AcceptanceTest {
 		@Nested
 		@DisplayName("계정 입력 형식이 올바르지 않는 경우")
 		class invalid_account_format {
+			String interactionId;
+
+			@BeforeEach
+			void before() {
+				interactionId = Interaction_생성됨();
+			}
+
 			@DisplayName("validation error가 발생한다.")
 			@Test
 			void success_sign_up_mobile() {
@@ -315,6 +350,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				params.put("email", "email.com");
 				params.put("name", "***!");
 				params.put("nickName", "some*");
+				params.put("interactionId", interactionId);
 
 				given().body(params)
 						.contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -332,6 +368,7 @@ class SignUpControllerTest extends AcceptanceTest {
 		class not_verify_mobile {
 			String mobile;
 			String code;
+			String interactionId;
 			AccountFactory factory;
 
 			@BeforeEach
@@ -340,6 +377,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				mobile = factory.getMobile();
 
 				code = 인증코드_발급됨(mobile);
+				interactionId = Interaction_생성됨();
 			}
 
 			@DisplayName("에러가 발생한다.")
@@ -352,6 +390,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				params.put("email", factory.getEmail());
 				params.put("name", factory.getName());
 				params.put("nickName", factory.getNickName());
+				params.put("interactionId", interactionId);
 
 				given().body(params)
 						.contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -368,12 +407,14 @@ class SignUpControllerTest extends AcceptanceTest {
 		@DisplayName("전화번호 인증이 요청되지 않은 경우")
 		class not_request_verification_mobile {
 			String mobile;
+			String interactionId;
 			AccountFactory factory;
 
 			@BeforeEach
 			void before() {
 				factory = AccountFactory.build();
 				mobile = factory.getMobile();
+				interactionId = Interaction_생성됨();
 			}
 
 			@DisplayName("에러가 발생한다.")
@@ -386,6 +427,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				params.put("email", factory.getEmail());
 				params.put("name", factory.getName());
 				params.put("nickName", factory.getNickName());
+				params.put("interactionId", interactionId);
 
 				given().body(params)
 						.contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -405,6 +447,7 @@ class SignUpControllerTest extends AcceptanceTest {
 			String email;
 
 			String code;
+			String interactionId;
 
 			@BeforeEach
 			void before() {
@@ -415,6 +458,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				email = signedUpAccount.getEmail();
 
 				code = 인증코드_인증됨(mobile);
+				interactionId = Interaction_생성됨();
 			}
 
 			@DisplayName("동일한 이메일로 가입된 계정 에러가 발생한다.")
@@ -428,6 +472,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				params.put("email", email);
 				params.put("name", factory.getName());
 				params.put("nickName", factory.getNickName());
+				params.put("interactionId", interactionId);
 
 				given().body(params)
 						.contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -445,6 +490,7 @@ class SignUpControllerTest extends AcceptanceTest {
 		class exist_mobile_account {
 			String mobile;
 			String email;
+			String interactionId;
 
 			@BeforeEach
 			void before() {
@@ -453,6 +499,7 @@ class SignUpControllerTest extends AcceptanceTest {
 
 				mobile = signedUpAccount.getMobile();
 				email = signedUpAccount.getEmail();
+				interactionId = Interaction_생성됨();
 			}
 
 			@DisplayName("동일한 전화번호로 가입된 계정 에러가 발생한다.")
@@ -466,6 +513,7 @@ class SignUpControllerTest extends AcceptanceTest {
 				params.put("email", factory.getEmail());
 				params.put("name", factory.getName());
 				params.put("nickName", factory.getNickName());
+				params.put("interactionId", interactionId);
 
 				given().body(params)
 						.contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -479,37 +527,27 @@ class SignUpControllerTest extends AcceptanceTest {
 		}
 	}
 
-	private void 인증코드_인증_요청(String mobile, String code) {
-		Map<String, String> params = new HashMap<>();
-		params.put("mobile", mobile);
-		params.put("code", code);
-
-		given().body(params)
-				.contentType(MediaType.APPLICATION_JSON_VALUE)
-				.when()
-				.post("/sign-up/verify-mobile")
-				.then()
-				.apply(print())
-				.assertThat(status().isOk());
-	}
-
-	private void 전화번호_인증_요청(String mobile) {
+	private RequestAccountVerificationMobileResponse 전화번호_인증_요청(String mobile) {
 		Map<String, String> params = new HashMap<>();
 		params.put("mobile", mobile);
 
-		given().body(params)
+		return given().body(params)
 				.contentType(MediaType.APPLICATION_JSON_VALUE)
 				.when()
 				.post("/sign-up/request-account-verification-mobile")
 				.then()
-				.apply(print())
-				.assertThat(status().isOk());
+				.extract()
+				.as(RequestAccountVerificationMobileResponse.class);
 	}
 
 	private String 인증코드_발급됨(String mobile) {
 		VerificationCode verificationCode = VerificationCode.generate(mobile);
 		verificationCodeRepository.save(verificationCode);
 		return verificationCode.getCode();
+	}
+
+	private String Interaction_생성됨() {
+		return interactionProvider.create("sign-up").getInteractionId();
 	}
 
 	private String 인증코드_인증됨(String mobile) {

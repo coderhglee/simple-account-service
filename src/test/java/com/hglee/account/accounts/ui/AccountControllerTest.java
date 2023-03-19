@@ -21,6 +21,7 @@ import com.hglee.account.accounts.domain.Status;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.dto.AccountResponseDto;
 import com.hglee.account.accounts.factory.AccountFactory;
+import com.hglee.account.auth.application.InteractionProvider;
 import com.hglee.account.auth.dto.AuthenticationResponse;
 import com.hglee.account.verificationCode.domain.VerificationCode;
 import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;
@@ -31,6 +32,9 @@ class AccountControllerTest extends AcceptanceTest {
 
 	@Autowired
 	IVerificationCodeRepository verificationCodeRepository;
+
+	@Autowired
+	InteractionProvider interactionProvider;
 
 	@Autowired
 	PasswordEncoder passwordEncoder;
@@ -218,6 +222,8 @@ class AccountControllerTest extends AcceptanceTest {
 
 	private AuthenticationResponse 회원가입_요청(AccountFactory factory) {
 		String code = 인증코드_인증됨(factory.getMobile());
+		String interactionId = interactionProvider.create("sign-up").getInteractionId();
+
 
 		Map<String, String> params = new HashMap<>();
 		params.put("mobile", factory.getMobile());
@@ -226,6 +232,7 @@ class AccountControllerTest extends AcceptanceTest {
 		params.put("email", factory.getEmail());
 		params.put("name", factory.getName());
 		params.put("nickName", factory.getNickName());
+		params.put("interactionId", interactionId);
 
 		return given().body(params)
 				.contentType(MediaType.APPLICATION_JSON_VALUE)
