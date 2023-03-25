@@ -2,13 +2,13 @@ package com.hglee.account.accounts.application.out.service;
 
 import org.springframework.stereotype.Service;
 
-import com.hglee.account.accounts.application.command.RequestAccountVerificationCommand;
-import com.hglee.account.accounts.application.command.SignUpWithMobileAndEmailCommand;
-import com.hglee.account.accounts.application.command.VerifyAccountCommand;
-import com.hglee.account.accounts.application.usecase.RequestAccountVerificationUseCase;
+import com.hglee.account.accounts.application.in.command.RequestAccountVerificationCommand;
+import com.hglee.account.accounts.application.in.command.SignUpWithMobileAndEmailCommand;
+import com.hglee.account.accounts.application.in.command.VerifyAccountCommand;
+import com.hglee.account.accounts.application.in.usecase.RequestAccountVerificationUseCase;
 import com.hglee.account.accounts.application.out.usecase.SignUpAccountUseCase;
-import com.hglee.account.accounts.application.usecase.SignUpWithMobileAndEmailUseCase;
-import com.hglee.account.accounts.application.usecase.VerifyAccountUseCase;
+import com.hglee.account.accounts.application.in.usecase.SignUpWithMobileAndEmailUseCase;
+import com.hglee.account.accounts.application.in.usecase.VerifyAccountUseCase;
 import com.hglee.account.accounts.dto.AccountResponseDto;
 import com.hglee.account.accounts.dto.SignUpMobileRequest;
 

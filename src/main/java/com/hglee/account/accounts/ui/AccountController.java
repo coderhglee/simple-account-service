@@ -7,12 +7,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hglee.account.accounts.application.command.ConfirmPasswordResetCommand;
-import com.hglee.account.accounts.application.command.RequestPasswordResetCommand;
-import com.hglee.account.accounts.application.command.ResetPasswordCommand;
-import com.hglee.account.accounts.application.usecase.ConfirmPasswordResetUseCase;
-import com.hglee.account.accounts.application.usecase.RequestPasswordResetUseCase;
-import com.hglee.account.accounts.application.usecase.ResetPasswordUseCase;
+import com.hglee.account.accounts.application.in.command.ConfirmPasswordResetCommand;
+import com.hglee.account.accounts.application.in.command.RequestPasswordResetCommand;
+import com.hglee.account.accounts.application.in.command.ResetPasswordCommand;
+import com.hglee.account.accounts.application.in.usecase.ConfirmPasswordResetUseCase;
+import com.hglee.account.accounts.application.in.usecase.RequestPasswordResetUseCase;
+import com.hglee.account.accounts.application.in.usecase.ResetPasswordUseCase;
 import com.hglee.account.accounts.dto.PasswordResetRequestDto;
 import com.hglee.account.accounts.dto.RequestPasswordResetRequestDto;
 import com.hglee.account.accounts.dto.ConfirmPasswordResetRequestDto;

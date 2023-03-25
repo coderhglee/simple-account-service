@@ -2,12 +2,12 @@ package com.hglee.account.accounts.application.out.service;
 
 import org.springframework.stereotype.Service;
 
-import com.hglee.account.accounts.application.command.SignInWithEmailCommand;
-import com.hglee.account.accounts.application.command.SignInWithMobileCommand;
-import com.hglee.account.accounts.application.usecase.FindSignedUpAccountUseCase;
+import com.hglee.account.accounts.application.in.command.SignInWithEmailCommand;
+import com.hglee.account.accounts.application.in.command.SignInWithMobileCommand;
+import com.hglee.account.accounts.application.in.usecase.FindSignedUpAccountUseCase;
 import com.hglee.account.accounts.application.out.usecase.IAccountService;
-import com.hglee.account.accounts.application.usecase.SignInWithEmailUseCase;
-import com.hglee.account.accounts.application.usecase.SignInWithMobileUseCase;
+import com.hglee.account.accounts.application.in.usecase.SignInWithEmailUseCase;
+import com.hglee.account.accounts.application.in.usecase.SignInWithMobileUseCase;
 import com.hglee.account.accounts.dto.AccountResponseDto;
 
 @Service

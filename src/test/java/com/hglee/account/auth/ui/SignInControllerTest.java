@@ -16,7 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.hglee.account.AcceptanceTest;
-import com.hglee.account.accounts.application.usecase.SignUpWithMobileAndEmailUseCase;
+import com.hglee.account.accounts.application.in.usecase.SignUpWithMobileAndEmailUseCase;
 import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.factory.AccountFactory;
