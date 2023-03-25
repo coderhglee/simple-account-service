@@ -14,11 +14,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Embeddable
 public class VerificationCodeId implements Serializable {
-	private String mobile;
+	private String identifier;
 	private String code;
 
-	public static VerificationCodeId of(String mobile, String code) {
-		return new VerificationCodeId(mobile, code);
+	public static VerificationCodeId of(String identifier, String code) {
+		return new VerificationCodeId(identifier, code);
 	}
 
 	@Override
@@ -28,11 +28,11 @@ public class VerificationCodeId implements Serializable {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		VerificationCodeId verificationCodeId = (VerificationCodeId)o;
-		return Objects.equals(mobile, verificationCodeId.mobile) && Objects.equals(code, verificationCodeId.code);
+		return Objects.equals(identifier, verificationCodeId.identifier) && Objects.equals(code, verificationCodeId.code);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(mobile, code);
+		return Objects.hash(identifier, code);
 	}
 }

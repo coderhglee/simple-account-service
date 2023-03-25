@@ -9,11 +9,10 @@ import com.hglee.account.accounts.application.in.usecase.RequestAccountVerificat
 import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.event.RequestedAccountVerificationEvent;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
+import com.hglee.account.accounts.dto.CreateVerificationCodeResponse;
 import com.hglee.account.accounts.exception.ConflictException;
+import com.hglee.account.accounts.infrastructure.client.IVerificationCodeClient;
 import com.hglee.account.core.IEventPublisher;
-import com.hglee.account.verificationCode.application.command.CreateVerificationCodeCommand;
-import com.hglee.account.verificationCode.application.usecase.CreateVerificationCodeUseCase;
-import com.hglee.account.verificationCode.dto.CreateVerificationCodeResponse;
 
 import lombok.AllArgsConstructor;
 
@@ -22,7 +21,7 @@ import lombok.AllArgsConstructor;
 public class RequestAccountVerificationService implements RequestAccountVerificationUseCase {
 	private final IAccountRepository accountRepository;
 	private final IEventPublisher eventPublisher;
-	private final CreateVerificationCodeUseCase createVerificationCodeUseCase;
+	private final IVerificationCodeClient verificationCodeClient;
 
 	@Override
 	@Transactional
@@ -33,8 +32,7 @@ public class RequestAccountVerificationService implements RequestAccountVerifica
 			throw new ConflictException("이미 가입된 계정입니다.");
 		});
 
-		CreateVerificationCodeResponse codeResponse = createVerificationCodeUseCase.execute(
-				new CreateVerificationCodeCommand(mobile));
+		CreateVerificationCodeResponse codeResponse = verificationCodeClient.create(mobile);
 
 		this.eventPublisher.publish(new RequestedAccountVerificationEvent(mobile, codeResponse.getCode()));
 	}

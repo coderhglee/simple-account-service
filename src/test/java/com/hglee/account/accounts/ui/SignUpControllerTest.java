@@ -18,7 +18,7 @@ import com.hglee.account.AcceptanceTest;
 import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.dto.RequestAccountVerificationMobileResponse;
 import com.hglee.account.accounts.factory.AccountFactory;
-import com.hglee.account.accounts.persistence.repository.AccountRepository;
+import com.hglee.account.accounts.infrastructure.persistence.repository.AccountRepository;
 import com.hglee.account.auth.application.InteractionProvider;
 import com.hglee.account.verificationCode.domain.VerificationCode;
 import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;

@@ -13,24 +13,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.hglee.account.accounts.application.in.command.RequestPasswordResetCommand;
-import com.hglee.account.accounts.application.in.service.RequestPasswordResetService;
 import com.hglee.account.accounts.application.in.usecase.RequestPasswordResetUseCase;
 import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.event.RequestedAccountVerificationEvent;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.exception.NotFoundException;
 import com.hglee.account.accounts.factory.AccountFactory;
+import com.hglee.account.accounts.infrastructure.client.IVerificationCodeClient;
 import com.hglee.account.core.IEventPublisher;
-import com.hglee.account.verificationCode.application.usecase.CreateVerificationCodeUseCase;
 
 @SpringBootTest
 class RequestPasswordResetServiceTest {
 	@Autowired
 	IAccountRepository accountRepository;
 
-
 	@Autowired
-	CreateVerificationCodeUseCase createVerificationCodeUseCase;
+	IVerificationCodeClient verificationCodeClient;
 
 	RequestPasswordResetUseCase useCase;
 
@@ -40,7 +38,7 @@ class RequestPasswordResetServiceTest {
 
 	@BeforeEach
 	void before() {
-		useCase = new RequestPasswordResetService(accountRepository, eventPublisher, createVerificationCodeUseCase);
+		useCase = new RequestPasswordResetService(accountRepository, eventPublisher, verificationCodeClient);
 	}
 
 	@Nested

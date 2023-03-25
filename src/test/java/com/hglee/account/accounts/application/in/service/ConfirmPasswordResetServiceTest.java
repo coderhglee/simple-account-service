@@ -10,13 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.hglee.account.accounts.application.in.command.ConfirmPasswordResetCommand;
-import com.hglee.account.accounts.application.in.service.ConfirmPasswordResetService;
 import com.hglee.account.accounts.application.in.usecase.ConfirmPasswordResetUseCase;
 import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
-import com.hglee.account.accounts.exception.NotFoundException;
 import com.hglee.account.accounts.factory.AccountFactory;
-import com.hglee.account.verificationCode.application.usecase.VerifyVerificationCodeUseCase;
+import com.hglee.account.accounts.infrastructure.client.IVerificationCodeClient;
 import com.hglee.account.verificationCode.domain.VerificationCode;
 import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;
 
@@ -29,13 +27,13 @@ class ConfirmPasswordResetServiceTest {
 	IVerificationCodeRepository verificationCodeRepository;
 
 	@Autowired
-	VerifyVerificationCodeUseCase verifyVerificationCodeUseCase;
+	IVerificationCodeClient verificationCodeClient;
 
 	ConfirmPasswordResetUseCase useCase;
 
 	@BeforeEach
 	void before() {
-		useCase = new ConfirmPasswordResetService(verifyVerificationCodeUseCase);
+		useCase = new ConfirmPasswordResetService(verificationCodeClient);
 	}
 
 	@Nested
@@ -47,10 +45,9 @@ class ConfirmPasswordResetServiceTest {
 			@Test
 			@DisplayName("에러가 발생한다.")
 			void it_not_requested_password_reset_account() {
-				assertThatThrownBy(
-						() -> useCase.execute(new ConfirmPasswordResetCommand(AccountFactory.build().getMobile(),
-								"123456"))).isInstanceOf(
-						NotFoundException.class).hasMessageContaining("해당 모바일로 요청된 인증코드가 존재하지 않습니다.");
+				assertThatThrownBy(() -> useCase.execute(
+						new ConfirmPasswordResetCommand(AccountFactory.build().getMobile(), "123456"))).isInstanceOf(
+						IllegalArgumentException.class).hasMessageContaining("인증코드를 사용할 수 없습니다.");
 			}
 		}
 
@@ -73,7 +70,7 @@ class ConfirmPasswordResetServiceTest {
 			@Test
 			void it_throw_error() {
 				then(catchThrowable(() -> useCase.execute(new ConfirmPasswordResetCommand(mobile, code)))).isInstanceOf(
-						IllegalStateException.class).hasMessageContaining("인증코드가 만료되었습니다.");
+						IllegalArgumentException.class).hasMessageContaining("인증코드를 사용할 수 없습니다.");
 			}
 		}
 	}

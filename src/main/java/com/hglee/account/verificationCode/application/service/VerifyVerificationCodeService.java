@@ -22,20 +22,26 @@ public class VerifyVerificationCodeService implements VerifyVerificationCodeUseC
 
 	@Override
 	@Transactional
-	public void execute(VerifyVerificationCodeCommand command) {
-		String mobile = command.getMobile();
-		String code = command.getCode();
+	public boolean execute(VerifyVerificationCodeCommand command) {
+		try {
+			String identifier = command.getIdentifier();
+			String code = command.getCode();
 
-		VerificationCode verificationCode = this.verificationCodeRepository.findOne(
-						VerificationCodeId.of(mobile, code))
-				.orElseThrow(() -> new NotFoundException("해당 모바일로 요청된 인증코드가 존재하지 않습니다."));
+			VerificationCode verificationCode = this.verificationCodeRepository.findOne(
+							VerificationCodeId.of(identifier, code))
+					.orElseThrow(() -> new NotFoundException("해당 identifier로 요청된 인증코드가 존재하지 않습니다."));
 
-		if (verificationCode.isExpired()) {
-			throw new IllegalStateException("인증코드가 만료되었습니다.");
+			if (verificationCode.isExpired()) {
+				throw new IllegalStateException("인증코드가 만료되었습니다.");
+			}
+
+			verificationCode.verify();
+
+			this.verificationCodeRepository.save(verificationCode);
+
+			return true;
+		} catch (Exception exception) {
+			return false;
 		}
-
-		verificationCode.verify();
-
-		this.verificationCodeRepository.save(verificationCode);
 	}
 }

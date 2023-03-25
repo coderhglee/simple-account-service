@@ -10,13 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.hglee.account.accounts.application.in.command.VerifyAccountCommand;
-import com.hglee.account.accounts.application.in.service.VerifyAccountService;
 import com.hglee.account.accounts.application.in.usecase.VerifyAccountUseCase;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
-import com.hglee.account.accounts.exception.NotFoundException;
 import com.hglee.account.accounts.factory.AccountFactory;
 import com.hglee.account.accounts.factory.PinCodeFactory;
-import com.hglee.account.verificationCode.application.usecase.VerifyVerificationCodeUseCase;
+import com.hglee.account.accounts.infrastructure.client.IVerificationCodeClient;
 import com.hglee.account.verificationCode.domain.VerificationCode;
 import com.hglee.account.verificationCode.domain.repository.IVerificationCodeRepository;
 
@@ -26,7 +24,7 @@ class VerifyAccountServiceTest {
 	IAccountRepository accountRepository;
 
 	@Autowired
-	VerifyVerificationCodeUseCase verifyVerificationCodeUseCase;
+	IVerificationCodeClient verificationCodeClient;
 
 	VerifyAccountUseCase useCase;
 
@@ -35,7 +33,7 @@ class VerifyAccountServiceTest {
 
 	@BeforeEach
 	void before() {
-		useCase = new VerifyAccountService(verifyVerificationCodeUseCase);
+		useCase = new VerifyAccountService(verificationCodeClient);
 	}
 
 	@Nested
@@ -80,7 +78,7 @@ class VerifyAccountServiceTest {
 			@DisplayName("인증코드가 존재하지 않는다는 에러가 발생한다.")
 			void it_throw_error() {
 				then(catchThrowable(() -> useCase.execute(new VerifyAccountCommand(mobile, code)))).isInstanceOf(
-						NotFoundException.class).hasMessageContaining("해당 모바일로 요청된 인증코드가 존재하지 않습니다.");
+						IllegalArgumentException.class).hasMessageContaining("인증코드를 사용할 수 없습니다.");
 			}
 		}
 
@@ -102,7 +100,7 @@ class VerifyAccountServiceTest {
 			void it_throw_error() {
 				then(catchThrowable(() -> useCase.execute(
 						new VerifyAccountCommand(mobile, PinCodeFactory.build().getCode())))).isInstanceOf(
-						NotFoundException.class).hasMessageContaining("해당 모바일로 요청된 인증코드가 존재하지 않습니다.");
+						IllegalArgumentException.class).hasMessageContaining("인증코드를 사용할 수 없습니다.");
 			}
 		}
 
@@ -124,7 +122,7 @@ class VerifyAccountServiceTest {
 			@Test
 			void it_throw_error() {
 				then(catchThrowable(() -> useCase.execute(new VerifyAccountCommand(mobile, code)))).isInstanceOf(
-						IllegalStateException.class).hasMessageContaining("인증코드가 만료되었습니다.");
+						IllegalArgumentException.class).hasMessageContaining("인증코드를 사용할 수 없습니다.");
 			}
 		}
 	}

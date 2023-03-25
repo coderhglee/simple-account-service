@@ -10,14 +10,13 @@ import lombok.Getter;
 @Getter
 public class VerifyVerificationCodeCommand extends SelfValidator<VerifyVerificationCodeCommand> {
 	@NotNull
-	@Pattern(regexp = "^\\d{3}(\\d{4})\\d{4}$", message = "전화번호 형식이 올바르지 않습니다.")
-	private final String mobile;
+	private final String identifier;
 	@NotNull
 	@Pattern(regexp = "^[0-9]{6}$", message = "인증코드 형식이 올바르지 않습니다.")
 	private final String code;
 
-	public VerifyVerificationCodeCommand(String mobile, String code) {
-		this.mobile = mobile;
+	public VerifyVerificationCodeCommand(String identifier, String code) {
+		this.identifier = identifier;
 		this.code = code;
 
 		this.validateSelf();

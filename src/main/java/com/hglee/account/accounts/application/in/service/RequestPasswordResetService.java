@@ -9,11 +9,10 @@ import com.hglee.account.accounts.application.in.usecase.RequestPasswordResetUse
 import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.event.RequestedPasswordResetEvent;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
+import com.hglee.account.accounts.dto.CreateVerificationCodeResponse;
 import com.hglee.account.accounts.exception.NotFoundException;
+import com.hglee.account.accounts.infrastructure.client.IVerificationCodeClient;
 import com.hglee.account.core.IEventPublisher;
-import com.hglee.account.verificationCode.application.command.CreateVerificationCodeCommand;
-import com.hglee.account.verificationCode.application.usecase.CreateVerificationCodeUseCase;
-import com.hglee.account.verificationCode.dto.CreateVerificationCodeResponse;
 
 import lombok.AllArgsConstructor;
 
@@ -22,7 +21,7 @@ import lombok.AllArgsConstructor;
 public class RequestPasswordResetService implements RequestPasswordResetUseCase {
 	private final IAccountRepository accountRepository;
 	private final IEventPublisher eventPublisher;
-	private final CreateVerificationCodeUseCase createVerificationCodeUseCase;
+	private final IVerificationCodeClient verificationCodeClient;
 
 	@Override
 	@Transactional
@@ -36,10 +35,8 @@ public class RequestPasswordResetService implements RequestPasswordResetUseCase 
 			throw new IllegalArgumentException("비밀번호 재설정을 요청할 수 없습니다.");
 		}
 
-		CreateVerificationCodeResponse createVerificationCodeResponse = createVerificationCodeUseCase.execute(
-				new CreateVerificationCodeCommand(mobile));
+		CreateVerificationCodeResponse response = verificationCodeClient.create(mobile);
 
-		this.eventPublisher.publish(
-				new RequestedPasswordResetEvent(account, createVerificationCodeResponse.getCode()));
+		this.eventPublisher.publish(new RequestedPasswordResetEvent(account, response.getCode()));
 	}
 }

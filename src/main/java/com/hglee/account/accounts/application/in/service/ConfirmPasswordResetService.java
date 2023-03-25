@@ -6,20 +6,20 @@ import org.springframework.stereotype.Service;
 
 import com.hglee.account.accounts.application.in.command.ConfirmPasswordResetCommand;
 import com.hglee.account.accounts.application.in.usecase.ConfirmPasswordResetUseCase;
-import com.hglee.account.verificationCode.application.command.VerifyVerificationCodeCommand;
-import com.hglee.account.verificationCode.application.usecase.VerifyVerificationCodeUseCase;
+import com.hglee.account.accounts.infrastructure.client.IVerificationCodeClient;
 
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @Service
 public class ConfirmPasswordResetService implements ConfirmPasswordResetUseCase {
-	private final VerifyVerificationCodeUseCase verifyVerificationCodeUseCase;
+	private final IVerificationCodeClient verificationCodeClient;
 
 	@Override
 	@Transactional
 	public void execute(ConfirmPasswordResetCommand command) {
-		this.verifyVerificationCodeUseCase.execute(
-				new VerifyVerificationCodeCommand(command.getMobile(), command.getCode()));
+		if (!this.verificationCodeClient.verify(command.getMobile(), command.getCode())) {
+			throw new IllegalArgumentException("인증코드를 사용할 수 없습니다.");
+		}
 	}
 }

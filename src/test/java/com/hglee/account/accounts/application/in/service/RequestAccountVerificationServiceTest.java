@@ -20,6 +20,7 @@ import com.hglee.account.accounts.domain.event.RequestedAccountVerificationEvent
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.exception.ConflictException;
 import com.hglee.account.accounts.factory.AccountFactory;
+import com.hglee.account.accounts.infrastructure.client.IVerificationCodeClient;
 import com.hglee.account.core.IEventPublisher;
 import com.hglee.account.verificationCode.application.service.CreateVerificationCodeService;
 import com.hglee.account.verificationCode.application.usecase.CreateVerificationCodeUseCase;
@@ -35,7 +36,8 @@ class RequestAccountVerificationServiceTest {
 
 	RequestAccountVerificationUseCase useCase;
 
-	CreateVerificationCodeUseCase createVerificationCodeUseCase;
+	@Autowired
+	IVerificationCodeClient verificationCodeClient;
 
 	@Mock
 	IEventPublisher eventPublisher = event -> {
@@ -43,9 +45,8 @@ class RequestAccountVerificationServiceTest {
 
 	@BeforeEach
 	void before() {
-		createVerificationCodeUseCase = new CreateVerificationCodeService(verificationCodeRepository);
 		useCase = new RequestAccountVerificationService(accountRepository, eventPublisher,
-				createVerificationCodeUseCase);
+				verificationCodeClient);
 	}
 
 	@Nested

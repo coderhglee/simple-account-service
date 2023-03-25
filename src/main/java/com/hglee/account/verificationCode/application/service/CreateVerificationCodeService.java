@@ -20,7 +20,7 @@ public class CreateVerificationCodeService implements CreateVerificationCodeUseC
 	@Override
 	public CreateVerificationCodeResponse execute(CreateVerificationCodeCommand command) {
 		VerificationCode createdVerificationCode = this.verificationCodeRepository.save(
-				VerificationCode.generate(command.getMobile()));
+				VerificationCode.generate(command.getIdentifier()));
 
 		return CreateVerificationCodeResponse.of(createdVerificationCode.getCode());
 	}

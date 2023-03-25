@@ -1,4 +1,4 @@
-package com.hglee.account.accounts.persistence.repository;
+package com.hglee.account.accounts.infrastructure.persistence.repository;
 
 import java.util.Optional;
 
