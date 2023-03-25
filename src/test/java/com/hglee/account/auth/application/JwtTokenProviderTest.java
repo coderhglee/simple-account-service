@@ -13,12 +13,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.oauth2.core.OAuth2Token;
-import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 
 import com.hglee.account.auth.dto.AccessTokenDecodedDto;
 import com.hglee.account.auth.dto.CreateOauth2TokenDto;
+import com.hglee.account.auth.infrastructure.security.JwtTokenProvider;
+import com.hglee.account.auth.infrastructure.security.TokenProvider;
 
 @SpringBootTest
 class JwtTokenProviderTest {

@@ -11,24 +11,22 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.hglee.account.accounts.application.usecase.IAccountService;
-import com.hglee.account.accounts.dto.AccountResponseDto;
+import com.hglee.account.auth.dto.AccountResponseDto;
 import com.hglee.account.auth.exception.AuthenticationException;
+import com.hglee.account.auth.infrastructure.client.IAccountManagementClient;
 import com.hglee.account.core.CurrentUser;
-import com.hglee.account.auth.application.TokenProvider;
+import com.hglee.account.auth.infrastructure.security.TokenProvider;
 import com.hglee.account.common.User;
 import com.hglee.account.auth.dto.AccessTokenDecodedDto;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 @Component
 public class AuthenticationArgumentResolver implements HandlerMethodArgumentResolver {
 
 	private final TokenProvider tokenProvider;
-	private final IAccountService accountService;
-
-	public AuthenticationArgumentResolver(TokenProvider tokenProvider, IAccountService accountService) {
-		this.tokenProvider = tokenProvider;
-		this.accountService = accountService;
-	}
+	private final IAccountManagementClient accountManagementClient;
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
@@ -54,7 +52,7 @@ public class AuthenticationArgumentResolver implements HandlerMethodArgumentReso
 
 		String sub = accessTokenDecodedDto.getSub();
 
-		AccountResponseDto accountResponseDto = accountService.findById(sub);
+		AccountResponseDto accountResponseDto = accountManagementClient.findById(sub);
 
 		return new User(accountResponseDto.getId(), accountResponseDto.getStatus(), accountResponseDto.getEmail(),
 				accountResponseDto.getMobile(), accountResponseDto.getName(), accountResponseDto.getNickName());

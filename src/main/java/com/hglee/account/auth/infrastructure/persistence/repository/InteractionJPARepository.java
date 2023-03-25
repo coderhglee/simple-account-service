@@ -1,4 +1,4 @@
-package com.hglee.account.auth.persistence.repository;
+package com.hglee.account.auth.infrastructure.persistence.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -1,4 +1,4 @@
-package com.hglee.account.accounts.application.usecase;
+package com.hglee.account.accounts.application.out.usecase;
 
 import com.hglee.account.accounts.dto.AccountResponseDto;
 

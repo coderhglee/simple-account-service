@@ -10,24 +10,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.hglee.account.accounts.application.usecase.IAccountService;
-import com.hglee.account.accounts.application.usecase.SignUpWithMobileAndEmailUseCase;
 import com.hglee.account.accounts.domain.Account;
 import com.hglee.account.accounts.domain.repository.IAccountRepository;
 import com.hglee.account.accounts.exception.NotFoundException;
 import com.hglee.account.accounts.factory.AccountFactory;
 import com.hglee.account.auth.dto.AuthenticationResponse;
+import com.hglee.account.auth.infrastructure.client.IAccountManagementClient;
+import com.hglee.account.auth.infrastructure.security.TokenProvider;
 
 @SpringBootTest
-class JwtIdentityProviderTest {
+class IdentityProviderServiceTest {
 	@Autowired
-	IAccountService accountService;
+	IAccountManagementClient accountManagementClient;
+
+	@Autowired
+	InteractionProvider interactionProvider;
 
 	@Autowired
 	PasswordEncoder encoder;
-
-	@Autowired
-	SignUpWithMobileAndEmailUseCase signUpWithMobileAndEmailUseCase;
 
 	@Autowired
 	IAccountRepository accountRepository;
@@ -39,7 +39,7 @@ class JwtIdentityProviderTest {
 
 	@BeforeEach
 	void before() {
-		identityProvider = new JwtIdentityProvider(accountService, tokenProvider);
+		identityProvider = new IdentityProviderService(accountManagementClient, interactionProvider, tokenProvider);
 	}
 
 	@Nested
@@ -87,7 +87,7 @@ class JwtIdentityProviderTest {
 	}
 
 	private void 회원가입_완료_됨(String mobile, String password) {
-		Account signedUpAccount = AccountFactory.isSignedUpAccount(mobile,encoder.encode(password));
+		Account signedUpAccount = AccountFactory.isSignedUpAccount(mobile, encoder.encode(password));
 
 		accountRepository.save((signedUpAccount));
 	}
