@@ -1,4 +1,4 @@
-package com.hglee.account.verificationCode.infrastructure.persistence;
+package com.hglee.account.verificationCode.infrastructure.persistence.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
