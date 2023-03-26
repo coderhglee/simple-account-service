@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @Component
-public class VerificationClient implements IVerificationCodeClient {
+public class VerificationCodeClient implements IVerificationCodeClient {
 	private final CreateVerificationCodeUseCase createVerificationCodeUseCase;
 
 	private final VerifyVerificationCodeUseCase verifyVerificationCodeUseCase;

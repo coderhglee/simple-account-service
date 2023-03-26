@@ -9,9 +9,9 @@ public interface IdentityProvider {
 
 	AuthenticationResponse signInWithEmail(String email, String password);
 
-	RequestAccountVerificationMobileResponse requestAccountVerificationMobile(String mobile);
+	RequestAccountVerificationMobileResponse requestAccountVerificationMobileForSignUp(String mobile);
 
-	void verifyMobile(String mobile, String code, String interactionId);
+	void verifyMobileForSignUp(String mobile, String code, String interactionId);
 
 	AuthenticationResponse signUpWithMobile(SignUpMobileRequest request);
 }

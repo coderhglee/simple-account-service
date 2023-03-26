@@ -35,7 +35,7 @@ public class SignUpController {
 	public ResponseEntity<RequestAccountVerificationMobileResponse> requestAccountVerificationMobile(
 			@RequestBody final RequestAccountVerificationMobileRequest request) {
 
-		RequestAccountVerificationMobileResponse requestAccountVerificationMobileResponse = identityProvider.requestAccountVerificationMobile(
+		RequestAccountVerificationMobileResponse requestAccountVerificationMobileResponse = this.identityProvider.requestAccountVerificationMobileForSignUp(
 				request.getMobile());
 
 		return ResponseEntity.ok(new RequestAccountVerificationMobileResponse(
@@ -49,7 +49,7 @@ public class SignUpController {
 			@ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 	@PostMapping(value = "/sign-up/verify-mobile", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> verifyMobile(@RequestBody final VerifyMobileRequest request) {
-		identityProvider.verifyMobile(request.getMobile(), request.getCode(), request.getInteractionId());
+		this.identityProvider.verifyMobileForSignUp(request.getMobile(), request.getCode(), request.getInteractionId());
 
 		return ResponseEntity.ok().build();
 	}
@@ -61,7 +61,7 @@ public class SignUpController {
 			@ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 	@PostMapping(value = "/sign-up/mobile", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<AuthenticationResponse> signUpEmailAndMobile(@RequestBody final SignUpMobileRequest request) {
-		AuthenticationResponse authenticationResponse = identityProvider.signUpWithMobile(request);
+		AuthenticationResponse authenticationResponse = this.identityProvider.signUpWithMobile(request);
 
 		return ResponseEntity.ok(authenticationResponse);
 	}

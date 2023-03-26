@@ -41,7 +41,7 @@ public class IdentityProviderService implements IdentityProvider {
 	}
 
 	@Override
-	public RequestAccountVerificationMobileResponse requestAccountVerificationMobile(String mobile) {
+	public RequestAccountVerificationMobileResponse requestAccountVerificationMobileForSignUp(String mobile) {
 		InteractionResponse interactionResponse = this.interactionProvider.create(SIGN_UP_PROMPT);
 
 		this.accountManagementClient.requestAccountVerificationMobile(mobile);
@@ -50,7 +50,7 @@ public class IdentityProviderService implements IdentityProvider {
 	}
 
 	@Override
-	public void verifyMobile(String mobile, String code, String interactionId) {
+	public void verifyMobileForSignUp(String mobile, String code, String interactionId) {
 		this.interactionProvider.verify(interactionId, SIGN_UP_PROMPT);
 
 		this.accountManagementClient.verifyMobile(mobile, code);
