@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 
 import com.hglee.account.auth.dto.AccessTokenDecodedDto;
+import com.hglee.account.auth.dto.AccessTokenEncodedDto;
 import com.hglee.account.auth.dto.CreateOauth2TokenDto;
 import com.hglee.account.auth.infrastructure.security.JwtTokenProvider;
 import com.hglee.account.auth.infrastructure.security.TokenProvider;
@@ -43,11 +44,11 @@ class JwtTokenProviderTest {
 		@DisplayName("It: 유효한 token이 발급된다.")
 		@Test
 		void issued_valid_jwt_token() {
-			OAuth2Token oAuth2Token = tokenProvider.encode(
+			AccessTokenEncodedDto oAuth2Token = tokenProvider.encode(
 					new CreateOauth2TokenDto(LocalDateTime.now().plusMinutes(1L), LocalDateTime.now(), "some"));
 
-			then(oAuth2Token.getTokenValue()).isExactlyInstanceOf(String.class);
-			then(tokenProvider.decode(oAuth2Token.getTokenValue()).get().getSub()).isEqualTo("some");
+			then(oAuth2Token.getAccessToken()).isExactlyInstanceOf(String.class);
+			then(tokenProvider.decode(oAuth2Token.getAccessToken()).get().getSub()).isEqualTo("some");
 		}
 	}
 
@@ -58,11 +59,11 @@ class JwtTokenProviderTest {
 		@Test
 		void it_throw_error() {
 			LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-			OAuth2Token oAuth2Token = tokenProvider.encode(
+			AccessTokenEncodedDto accessTokenEncodedDto = tokenProvider.encode(
 					new CreateOauth2TokenDto(now.plusNanos(10),
 							now, "some"));
 
-			Optional<AccessTokenDecodedDto> decode = tokenProvider.decode(oAuth2Token.getTokenValue());
+			Optional<AccessTokenDecodedDto> decode = tokenProvider.decode(accessTokenEncodedDto.getAccessToken());
 
 			then(decode.isEmpty()).isTrue();
 		}

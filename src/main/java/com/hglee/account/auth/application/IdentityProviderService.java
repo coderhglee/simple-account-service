@@ -3,9 +3,9 @@ package com.hglee.account.auth.application;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.stereotype.Service;
 
+import com.hglee.account.auth.dto.AccessTokenEncodedDto;
 import com.hglee.account.auth.dto.AccountResponseDto;
 import com.hglee.account.auth.dto.CreateOauth2TokenDto;
 import com.hglee.account.auth.dto.AuthenticationResponse;
@@ -44,7 +44,7 @@ public class IdentityProviderService implements IdentityProvider {
 	public RequestAccountVerificationMobileResponse requestAccountVerificationMobile(String mobile) {
 		InteractionResponse interactionResponse = this.interactionProvider.create(SIGN_UP_PROMPT);
 
-		accountManagementClient.requestAccountVerificationMobile(mobile);
+		this.accountManagementClient.requestAccountVerificationMobile(mobile);
 
 		return new RequestAccountVerificationMobileResponse(mobile, interactionResponse.getInteractionId());
 	}
@@ -53,14 +53,14 @@ public class IdentityProviderService implements IdentityProvider {
 	public void verifyMobile(String mobile, String code, String interactionId) {
 		this.interactionProvider.verify(interactionId, SIGN_UP_PROMPT);
 
-		accountManagementClient.verifyMobile(mobile, code);
+		this.accountManagementClient.verifyMobile(mobile, code);
 	}
 
 	@Override
 	public AuthenticationResponse signUpWithMobile(SignUpMobileRequest request) {
 		this.interactionProvider.verify(request.getInteractionId(), SIGN_UP_PROMPT);
 
-		AccountResponseDto accountResponseDto = accountManagementClient.signUpWithMobile(request);
+		AccountResponseDto accountResponseDto = this.accountManagementClient.signUpWithMobile(request);
 
 		this.interactionProvider.finish(request.getInteractionId());
 
@@ -70,10 +70,9 @@ public class IdentityProviderService implements IdentityProvider {
 	private AuthenticationResponse grantAuthentication(AccountResponseDto accountResponseDto) {
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 
-		OAuth2Token oAuth2Token = tokenProvider.encode(
+		AccessTokenEncodedDto encodeToken = this.tokenProvider.encode(
 				new CreateOauth2TokenDto(now.plusMinutes(5L), now, accountResponseDto.getId()));
 
-		return AuthenticationResponse.of(oAuth2Token.getTokenValue(), oAuth2Token.getIssuedAt(),
-				oAuth2Token.getExpiresAt());
+		return AuthenticationResponse.of(encodeToken.getAccessToken(), encodeToken.getIss(), encodeToken.getExp());
 	}
 }

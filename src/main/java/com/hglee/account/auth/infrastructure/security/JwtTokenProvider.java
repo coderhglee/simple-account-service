@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
+import com.hglee.account.auth.dto.AccessTokenEncodedDto;
 import com.hglee.account.auth.dto.CreateOauth2TokenDto;
 import com.hglee.account.auth.dto.AccessTokenDecodedDto;
 
@@ -41,7 +42,7 @@ public class JwtTokenProvider implements TokenProvider {
 	}
 
 	@Override
-	public OAuth2Token encode(CreateOauth2TokenDto dto) {
+	public AccessTokenEncodedDto encode(CreateOauth2TokenDto dto) {
 		JwtClaimsSet claims = JwtClaimsSet.builder()
 				.issuer("https://simple-account-service")
 				.issuedAt(dto.getIssuedAt().toInstant(ZoneOffset.UTC))
@@ -49,6 +50,8 @@ public class JwtTokenProvider implements TokenProvider {
 				.subject(dto.getSubject())
 				.build();
 
-		return this.jwtEncoder.encode(JwtEncoderParameters.from(claims));
+		Jwt jwt = this.jwtEncoder.encode(JwtEncoderParameters.from(claims));
+
+		return new AccessTokenEncodedDto(jwt.getIssuedAt(), jwt.getExpiresAt(), jwt.getTokenValue());
 	}
 }
